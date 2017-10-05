@@ -1,4 +1,4 @@
-//trigTable is a table with 10 rows for ten combinations or p_(mu)p_(nu) normalized by the energy
+//trigTable is a table with 10 rows for ten combinations or p^(mu)p_(nu) normalized by the energy
 #include <stdio.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
@@ -8,46 +8,49 @@
 #include <gsl/gsl_sort_vector.h>
 
 #define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
-void calculateTrigTable(float ***trigTable)
+/*
+void calculateHypertrigTable(float ***hypertrigTable)
 {
-  for (int ithetap = 0; ithetap < DIM_THETAP; ithetap++)
+  for (int irap = 0; irap < DIM_RAP; irap++)
   {
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
     {
-      float thetap = float(ithetap) * (PI) / float(DIM_THETAP);
+      float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
+      float rap = (float)irap * DRAP + rapmin;
       float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
-      trigTable[0][ithetap][iphip] = 1.0; //p_t, p_t component
-      trigTable[1][ithetap][iphip] = sin(thetap) * cos(phip); //p_t, p_x
-      trigTable[2][ithetap][iphip] = sin(thetap) * sin(phip); //p_t, p_y
-      trigTable[3][ithetap][iphip] = cos(thetap); //p_t, p_z
-      trigTable[4][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * cos(phip); //p_x, p_x
-      trigTable[5][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * sin(phip); //p_x, p_y
-      trigTable[6][ithetap][iphip] = sin(thetap) * cos(phip) * cos(thetap); //p_x, p_z
-      trigTable[7][ithetap][iphip] = sin(thetap) * sin(phip) * sin(thetap) * sin(phip); //p_y, p_y
-      trigTable[8][ithetap][iphip] = sin(thetap) * sin(phip) * cos(thetap); //p_y, p_z
-      trigTable[9][ithetap][iphip] = cos(thetap) * cos(thetap); //p_z, p_z
+
+      trigTable[0][ithetap][iphip] = 1.0; //p^tau, p^tau component
+      trigTable[1][ithetap][iphip] = sin(thetap) * cos(phip); //p^tau, p^x
+      trigTable[2][ithetap][iphip] = sin(thetap) * sin(phip); //p^tau, p^y
+      trigTable[3][ithetap][iphip] = cos(thetap); //p^tau, p^eta
+      trigTable[4][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * cos(phip); //p^x, p^x
+      trigTable[5][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * sin(phip); //p^x, p^y
+      trigTable[6][ithetap][iphip] = sin(thetap) * cos(phip) * cos(thetap); //p^x, p^eta
+      trigTable[7][ithetap][iphip] = sin(thetap) * sin(phip) * sin(thetap) * sin(phip); //p^y, p^y
+      trigTable[8][ithetap][iphip] = sin(thetap) * sin(phip) * cos(thetap); //p^y, p^eta
+      trigTable[9][ithetap][iphip] = cos(thetap) * cos(thetap); //p^eta, p^eta
       trigTable[10][ithetap][iphip] = sin(thetap); //just sin (thetap), useful for when we calculate stress tensor
     }
   }
 }
+*/
 void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ***trigTable)
 {
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
-  for (int ivar = 0; ivar < 10; ivar++) //ten independent components
+
+  #pragma omp parallel for simd
+  for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
   {
-    #pragma omp parallel for simd
-    for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
+    for (int irap = 0; irap < DIM_RAP; irap++)
     {
-      for (int irap = 0; irap < DIM_RAP; irap++)
+      for (int iphip = 0; iphip < DIM_PHIP; iphip++)
       {
-        for (int iphip = 0; iphip < DIM_PHIP; iphip++)
-        {
-          //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
-          stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip] * hypertrigTable[10][irap][iphip] * DRAP * d_phip;
-        }
+        //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
+        stressTensor[0][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip] * hypertrigTable[10][irap][iphip] * DRAP * d_phip;
       }
     }
   }
+
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {

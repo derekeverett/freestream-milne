@@ -35,8 +35,8 @@ int main(void)
   float **stressTensor;
   stressTensor = calloc2dArray(stressTensor, 10, DIM);
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
-  float ***hypertrigTable;
-  hypertrigTable = calloc3dArray(trigTable, 11, DIM_RAP, DIM_PHIP);
+  //float ***hypertrigTable;
+  //hypertrigTable = calloc3dArray(trigTable, 11, DIM_RAP, DIM_PHIP);
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
@@ -83,9 +83,9 @@ int main(void)
   printf("Landau matching to find hydrodynamic variables\n");
 
   //printf("calculating trig table\n");
-  sec = omp_get_wtime();
-  calculateTrigTable(hypertrigTable);
-  sec = omp_get_wtime() - sec;
+  //sec = omp_get_wtime();
+  //calculateHypertrigTable(hypertrigTable);
+  //sec = omp_get_wtime() - sec;
   //printf("calculating trig table took %f seconds\n", sec);
 
   //calculate the ten independent components of the stress tensor by integrating over momentum angles
