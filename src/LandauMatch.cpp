@@ -7,13 +7,13 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
 
-#define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
+#define REGULATE 0 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
 
 void calculateHypertrigTable(float ****hypertrigTable)
 {
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
-
+  #pragma omp parallel for simd
   for (int irap = 0; irap < DIM_RAP; irap++)
   {
     float rap = (float)irap * DRAP + rapmin;
@@ -68,7 +68,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
-  float tolerance = 1e18; //set quantities to zero which are less than 10^(-18)
+  float tolerance = 1e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -83,41 +83,42 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     gsl_vector_complex *eigen_values;
     eigen_values = gsl_vector_complex_alloc(4);
     //set the values of the energy momentum tensor
-    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tt
-    gsl_matrix_set(Tmunu, 0, 1, stressTensor[1][is]); //tx
-    gsl_matrix_set(Tmunu, 0, 2, stressTensor[2][is]); //ty
-    gsl_matrix_set(Tmunu, 0, 3, stressTensor[3][is]); //tz
-    gsl_matrix_set(Tmunu, 1, 1, stressTensor[4][is]); //xx
-    gsl_matrix_set(Tmunu, 1, 2, stressTensor[5][is]); //xy
-    gsl_matrix_set(Tmunu, 1, 3, stressTensor[6][is]); //xz
-    gsl_matrix_set(Tmunu, 2, 2, stressTensor[7][is]); //yy
-    gsl_matrix_set(Tmunu, 2, 3, stressTensor[8][is]); //yz
-    gsl_matrix_set(Tmunu, 3, 3, stressTensor[9][is]); //zz
-    gsl_matrix_set(Tmunu, 1, 0, stressTensor[1][is]); //xt
-    gsl_matrix_set(Tmunu, 2, 0, stressTensor[2][is]); //yt
-    gsl_matrix_set(Tmunu, 3, 0, stressTensor[3][is]); //zt
-    gsl_matrix_set(Tmunu, 2, 1, stressTensor[5][is]); //yx
-    gsl_matrix_set(Tmunu, 3, 1, stressTensor[6][is]); //zx
-    gsl_matrix_set(Tmunu, 3, 2, stressTensor[8][is]); //zy
+    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tau,tau
+    gsl_matrix_set(Tmunu, 0, 1, stressTensor[1][is]); //tau,x
+    gsl_matrix_set(Tmunu, 0, 2, stressTensor[2][is]); //tau,y
+    gsl_matrix_set(Tmunu, 0, 3, stressTensor[3][is]); //tau,eta
+    gsl_matrix_set(Tmunu, 1, 1, stressTensor[4][is]); //x,x
+    gsl_matrix_set(Tmunu, 1, 2, stressTensor[5][is]); //x,y
+    gsl_matrix_set(Tmunu, 1, 3, stressTensor[6][is]); //x,eta
+    gsl_matrix_set(Tmunu, 2, 2, stressTensor[7][is]); //y,y
+    gsl_matrix_set(Tmunu, 2, 3, stressTensor[8][is]); //y,eta
+    gsl_matrix_set(Tmunu, 3, 3, stressTensor[9][is]); //eta,eta
+    gsl_matrix_set(Tmunu, 1, 0, stressTensor[1][is]); //x,tau
+    gsl_matrix_set(Tmunu, 2, 0, stressTensor[2][is]); //y,tau
+    gsl_matrix_set(Tmunu, 3, 0, stressTensor[3][is]); //eta,tau
+    gsl_matrix_set(Tmunu, 2, 1, stressTensor[5][is]); //y,x
+    gsl_matrix_set(Tmunu, 3, 1, stressTensor[6][is]); //eta,x
+    gsl_matrix_set(Tmunu, 3, 2, stressTensor[8][is]); //eta,y
 
     //set the values of the "metric"; not really the metric, but the numerical constants
     //which are multiplied by the elements of T^(mu,nu) to get the values of T^(mu)_(nu)
-    gsl_matrix_set(gmunu, 0, 0, 1.0); //tt
-    gsl_matrix_set(gmunu, 0, 1, -1.0); //tx
-    gsl_matrix_set(gmunu, 0, 2, -1.0); //ty
-    gsl_matrix_set(gmunu, 0, 3, -1.0); //tz
-    gsl_matrix_set(gmunu, 1, 0, 1.0); //xt
-    gsl_matrix_set(gmunu, 1, 1, -1.0); //xx
-    gsl_matrix_set(gmunu, 1, 2, -1.0); //xy
-    gsl_matrix_set(gmunu, 1, 3, -1.0); //xz
-    gsl_matrix_set(gmunu, 2, 0, 1.0); //yt
-    gsl_matrix_set(gmunu, 2, 1, -1.0); //yx
-    gsl_matrix_set(gmunu, 2, 2, -1.0); //yy
-    gsl_matrix_set(gmunu, 2, 3, -1.0); //yz
-    gsl_matrix_set(gmunu, 3, 0, 1.0); //zt
-    gsl_matrix_set(gmunu, 3, 1, -1.0); //zx
-    gsl_matrix_set(gmunu, 3, 2, -1.0); //zy
-    gsl_matrix_set(gmunu, 3, 3, -1.0); //zz
+    //note factors of TAU appropriate for milne coordinates g_(mu.nu) = diag(1,-1,-1,-TAU^2)
+    gsl_matrix_set(gmunu, 0, 0, 1.0); //tau,tau
+    gsl_matrix_set(gmunu, 0, 1, -1.0); //tau,x
+    gsl_matrix_set(gmunu, 0, 2, -1.0); //tau,y
+    gsl_matrix_set(gmunu, 0, 3, -1.0*TAU*TAU); //tau,eta
+    gsl_matrix_set(gmunu, 1, 0, 1.0); //x,tau
+    gsl_matrix_set(gmunu, 1, 1, -1.0); //x,x
+    gsl_matrix_set(gmunu, 1, 2, -1.0); //x,y
+    gsl_matrix_set(gmunu, 1, 3, -1.0*TAU*TAU); //x,eta
+    gsl_matrix_set(gmunu, 2, 0, 1.0); //y,tau
+    gsl_matrix_set(gmunu, 2, 1, -1.0); //y,x
+    gsl_matrix_set(gmunu, 2, 2, -1.0); //y,y
+    gsl_matrix_set(gmunu, 2, 3, -1.0*TAU*TAU); //y,eta
+    gsl_matrix_set(gmunu, 3, 0, 1.0); //eta,tau
+    gsl_matrix_set(gmunu, 3, 1, -1.0); //eta,x
+    gsl_matrix_set(gmunu, 3, 2, -1.0); //eta,y
+    gsl_matrix_set(gmunu, 3, 3, -1.0*TAU*TAU); //eta,eta
     //lower one index of the stress tensor; save it to the same matrix to save memory
     gsl_matrix_mul_elements(Tmunu, gmunu); //result stored in Tmunu !this multiplies element-wise, not ordinary matrix multiplication!
     gsl_eigen_nonsymmv_workspace *eigen_workspace;
@@ -136,13 +137,14 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
         double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
         double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
-        //double euclideanLength = v0*v0 + v1*v1 + v2*v2 + v3*v3; //gsl normalizes eigenvectors to euclideanLength = 1; this is just a check
-        double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
+        //gsl normalizes eigenvectors to euclidean length = 1; we want a vector with minkowski length = 1, so we rescale
+        //note factors of TAU appropriate for milne coordinates
+        double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + TAU*TAU*v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
         double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
 
-        if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions
+        if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions - check if this helps or not
         {
           energyDensity[is] = 0.0;
           flowVelocity[0][is] = 0.0;
@@ -161,25 +163,28 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 }
 void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure)
 {
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
-    // T^(mu)_(mu) = T^(0,0) - T^(1,1) - T^(2,2) - T^(3,3)
-    float a =  stressTensor[0][is] - stressTensor[4][is] - stressTensor[7][is] - stressTensor[9][is];
+    // T^(mu)_(mu) = T^(0,0) - T^(1,1) - T^(2,2) - (TAU^2)T^(3,3)
+    float a =  stressTensor[0][is] - stressTensor[4][is] - stressTensor[7][is] - TAU*TAU*stressTensor[9][is];
     bulkPressure[is] = (-1.0/3.0) * (a - energyDensity[is]) - pressure[is];
   }
 }
 void calculateShearViscTensor(float **stressTensor, float *energyDensity, float **flowVelocity, float *pressure, float *bulkPressure, float **shearTensor)
 {
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
+    // can solve for all 10 components here if I want/need to, just chose 5 at random
     float c = energyDensity[is] + pressure[is] + bulkPressure[is];
-    shearTensor[0][is] = stressTensor[1][is] - flowVelocity[0][is] * flowVelocity[1][is] * c; //pi^(0,1)
-    shearTensor[1][is] = stressTensor[2][is] - flowVelocity[0][is] * flowVelocity[2][is] * c; //pi^(0,2)
-    shearTensor[2][is] = stressTensor[3][is] - flowVelocity[0][is] * flowVelocity[3][is] * c; //pi^(0,3)
-    shearTensor[3][is] = stressTensor[5][is] - flowVelocity[1][is] * flowVelocity[2][is] * c; //pi^(1,2)
-    shearTensor[4][is] = stressTensor[6][is] - flowVelocity[1][is] * flowVelocity[3][is] * c; //pi^(1,3)
-    shearTensor[5][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * c; //pi^(2,3)
+    shearTensor[0][is] = stressTensor[1][is] - flowVelocity[0][is] * flowVelocity[1][is] * c; //pi^(tau,x)
+    shearTensor[1][is] = stressTensor[2][is] - flowVelocity[0][is] * flowVelocity[2][is] * c; //pi^(tau,y)
+    shearTensor[2][is] = stressTensor[3][is] - flowVelocity[0][is] * flowVelocity[3][is] * c; //pi^(tau,eta)
+    shearTensor[3][is] = stressTensor[5][is] - flowVelocity[1][is] * flowVelocity[2][is] * c; //pi^(x,y)
+    shearTensor[4][is] = stressTensor[6][is] - flowVelocity[1][is] * flowVelocity[3][is] * c; //pi^(x,eta)
+    shearTensor[5][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * c; //pi^(y,eta)
   }
 }
