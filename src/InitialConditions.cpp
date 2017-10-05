@@ -30,8 +30,8 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta) /
 {
   for (int is = 0; is < DIM; is++)
   {
-    int ix = is / (DIM_Y * DIM_Z);
-    int iy = (is - (DIM_Y * DIM_Z * ix))/ DIM_Z;
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
@@ -47,8 +47,8 @@ void initializeMCGauss(float * density, float b)
 {
   for (int is = 0; is < DIM; is++)
   {
-    int ix = is / (DIM_Y * DIM_Z);
-    int iy = (is - (DIM_Y * DIM_Z * ix))/ DIM_Z;
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
@@ -64,8 +64,8 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta)
 {
   for (int is = 0; is < DIM; is++)
   {
-    int ix = is / (DIM_Y * DIM_Z);
-    int iy = (is - (DIM_Y * DIM_Z * ix))/ DIM_Z;
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?

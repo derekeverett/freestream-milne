@@ -36,7 +36,7 @@ int main(void)
   stressTensor = calloc2dArray(stressTensor, 10, DIM);
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
   float ****hypertrigTable;
-  hypertrigTable = calloc4dArray(trigTable, 10, DIM_RAP, DIM_PHIP, DIM_ETA); //depends on eta because we have function of eta - y
+  hypertrigTable = calloc4dArray(hypertrigTable, 10, DIM_RAP, DIM_PHIP, DIM_ETA); //depends on eta because we have function of eta - y
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
@@ -117,10 +117,10 @@ int main(void)
 
   //free the memory
   free(initialEnergyDensity);
-  free(density);
+  free2dArray(density, DIM);
   free3dArray(shiftedDensity, DIM, DIM_RAP);
   free2dArray(stressTensor, 10);
-  free4dArray(hypertrigTable, 11, DIM_RAP, DIM_PHIP);
+  free4dArray(hypertrigTable, 10, DIM_RAP, DIM_PHIP);
 
   free(energyDensity);
   free2dArray(flowVelocity, 4);

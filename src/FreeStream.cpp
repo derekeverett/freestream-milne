@@ -53,8 +53,6 @@ void convertInitialDensity(float *initialEnergyDensity, float **density)
   float norm_factor = 1.0 / (2.0 * PI * n); //the normalization constant relating the intial energy density to the intial density profile G(tilde)^(tau,tau)
 
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
-  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
-  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
 
   for (int is = 0; is < DIM; is++)
@@ -68,7 +66,7 @@ void convertInitialDensity(float *initialEnergyDensity, float **density)
     for (int irap = 0; irap < DIM_RAP; irap++)
     {
       float rap = (float)irap * DRAP + rapmin;
-      rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA));
+      float rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA));
       density[is][irap] = initialEnergyDensity[is] * norm_factor * rap_factor; //this is initial G^(tau,tau)
     }
 
