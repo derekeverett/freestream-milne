@@ -26,8 +26,8 @@ int main(void)
   float *initialEnergyDensity;
   initialEnergyDensity = (float *)calloc(DIM, sizeof(float));
   //the initial density G(tilde)^(tau,tau) at time t0
-  float *density;
-  density = (float *)calloc(DIM, sizeof(float));
+  float **density;
+  density = calloc2dArray(density, DIM, DIM_ETA); // function of x,y,eta and rapidity
   //the shited density profile G^(tau,tau) at time t
   float ***shiftedDensity;
   shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_RAP, DIM_PHIP);
@@ -35,8 +35,8 @@ int main(void)
   float **stressTensor;
   stressTensor = calloc2dArray(stressTensor, 10, DIM);
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
-  //float ***hypertrigTable;
-  //hypertrigTable = calloc3dArray(trigTable, 11, DIM_RAP, DIM_PHIP);
+  float ****hypertrigTable;
+  hypertrigTable = calloc4dArray(trigTable, 10, DIM_RAP, DIM_PHIP, DIM_ETA); //depends on eta because we have function of eta - y
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
@@ -82,11 +82,11 @@ int main(void)
   //Landau matching to find the components of energy-momentum tensor
   printf("Landau matching to find hydrodynamic variables\n");
 
-  //printf("calculating trig table\n");
-  //sec = omp_get_wtime();
-  //calculateHypertrigTable(hypertrigTable);
-  //sec = omp_get_wtime() - sec;
-  //printf("calculating trig table took %f seconds\n", sec);
+  printf("calculating hypertrig table\n");
+  sec = omp_get_wtime();
+  calculateHypertrigTable(hypertrigTable);
+  sec = omp_get_wtime() - sec;
+  printf("calculating trig table took %f seconds\n", sec);
 
   //calculate the ten independent components of the stress tensor by integrating over momentum angles
   printf("calculating independent components of stress tensor\n");
@@ -120,7 +120,7 @@ int main(void)
   free(density);
   free3dArray(shiftedDensity, DIM, DIM_RAP);
   free2dArray(stressTensor, 10);
-  free3dArray(hypertrigTable, 11, DIM_RAP);
+  free4dArray(hypertrigTable, 11, DIM_RAP, DIM_PHIP);
 
   free(energyDensity);
   free2dArray(flowVelocity, 4);

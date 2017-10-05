@@ -8,49 +8,63 @@
 #include <gsl/gsl_sort_vector.h>
 
 #define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
-/*
-void calculateHypertrigTable(float ***hypertrigTable)
+
+void calculateHypertrigTable(float ****hypertrigTable)
 {
+  float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
+  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
+
   for (int irap = 0; irap < DIM_RAP; irap++)
   {
+    float rap = (float)irap * DRAP + rapmin;
+
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
     {
-      float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
-      float rap = (float)irap * DRAP + rapmin;
       float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
-      trigTable[0][ithetap][iphip] = 1.0; //p^tau, p^tau component
-      trigTable[1][ithetap][iphip] = sin(thetap) * cos(phip); //p^tau, p^x
-      trigTable[2][ithetap][iphip] = sin(thetap) * sin(phip); //p^tau, p^y
-      trigTable[3][ithetap][iphip] = cos(thetap); //p^tau, p^eta
-      trigTable[4][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * cos(phip); //p^x, p^x
-      trigTable[5][ithetap][iphip] = sin(thetap) * cos(phip) * sin(thetap) * sin(phip); //p^x, p^y
-      trigTable[6][ithetap][iphip] = sin(thetap) * cos(phip) * cos(thetap); //p^x, p^eta
-      trigTable[7][ithetap][iphip] = sin(thetap) * sin(phip) * sin(thetap) * sin(phip); //p^y, p^y
-      trigTable[8][ithetap][iphip] = sin(thetap) * sin(phip) * cos(thetap); //p^y, p^eta
-      trigTable[9][ithetap][iphip] = cos(thetap) * cos(thetap); //p^eta, p^eta
-      trigTable[10][ithetap][iphip] = sin(thetap); //just sin (thetap), useful for when we calculate stress tensor
-    }
-  }
-}
-*/
-void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ***trigTable)
-{
-  float d_phip = (2.0 * PI) / float(DIM_PHIP);
-
-  #pragma omp parallel for simd
-  for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
-  {
-    for (int irap = 0; irap < DIM_RAP; irap++)
-    {
-      for (int iphip = 0; iphip < DIM_PHIP; iphip++)
+      for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
-        //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
-        stressTensor[0][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip] * hypertrigTable[10][irap][iphip] * DRAP * d_phip;
+        float eta = (float)ieta * DETA  + etamin;
+
+        trigTable[0][ithetap][iphip][ieta] = 1.0; //p^tau, p^tau component
+        trigTable[1][ithetap][iphip][ieta] = cos(phip) / cosh(rap - eta); //p^tau, p^x
+        trigTable[2][ithetap][iphip][ieta] = sin(phip) / cosh(rap - eta); //p^tau, p^y
+        trigTable[3][ithetap][iphip][ieta] = (-1.0 / TAU) * tanh(rap - eta); //p^tau, p^eta
+        trigTable[4][ithetap][iphip][ieta] = (cos(phip) * cos(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^x
+        trigTable[5][ithetap][iphip][ieta] = (cos(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^y
+        trigTable[6][ithetap][iphip][ieta] = (-1.0 / TAU) * (cos(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^x, p^eta
+        trigTable[7][ithetap][iphip][ieta] = (sin(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^y, p^y
+        trigTable[8][ithetap][iphip][ieta] = (-1.0 / TAU) * (sin(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^y, p^eta
+        trigTable[9][ithetap][iphip][ieta] = (1.0 / (TAU * TAU)) * tanh(rap - eta) * tanh(rap - eta); //p^eta, p^eta
       }
     }
   }
+}
 
+void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable)
+{
+  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+
+  for (int ivar = 0; ivar < 10; ivar++)
+  {
+    #pragma omp parallel for simd
+    for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
+    {
+      int ix = is / (DIM_Y * DIM_ETA);
+      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+      for (int irap = 0; irap < DIM_RAP; irap++)
+      {
+        for (int iphip = 0; iphip < DIM_PHIP; iphip++)
+        {
+          //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
+          // T^(mu,nu) = int deta int dphip G^(mu,nu)
+          stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * DRAP * d_phip;
+        }
+      }
+    }
+  }
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
