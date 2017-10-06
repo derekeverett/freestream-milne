@@ -1,3 +1,4 @@
+#define INITCOND 2 //sets initial condition. 1 : smooth oblate gaussian, 2 : fluctuating oblate gaussian , 3 : MC-Glauber + longitudinal form , 4 : read in from file 
 #define PI 3.141592654f //question bro?
 #define SIGMA 1.0f //the width of the gaussian distribution in (y - eta). Generalize this to a spacetime function?
 #define DIM_X 51 //number of grid points in x direction

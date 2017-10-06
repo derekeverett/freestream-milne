@@ -76,3 +76,20 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta)
     density[is] = ((float)rand() / RAND_MAX) * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
   }
 }
+
+void initializeMCGlbPlus(float *density) //needs to be fixed!
+{
+  for (int is = 0; is < DIM; is++)
+  {
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+    //does it work for even number of points?
+    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
+    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
+    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+
+    density[is] = 0.0;
+  }
+}

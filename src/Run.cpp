@@ -55,10 +55,14 @@ int main(void)
 
   //initialize energy density
   printf("setting initial conditions on energy density\n");
-  //initializeGauss(initialEnergyDensity, 1.0);
-  //initializeMCGauss(initialEnergyDensity, 1.0);
-  //initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
-  initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+  if (INITCOND == 1) initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+  else if (INITCOND == 2) initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+  else if (INITCOND == 3) initializeMCGlbPlus(initialEnergyDensity);
+  else
+  {
+    printf("Not a valid initial condition - Goodbye\n");
+    return 0;
+  }
 
   //write initial profile to file
   writeScalarToFile(initialEnergyDensity, "initial_e");
