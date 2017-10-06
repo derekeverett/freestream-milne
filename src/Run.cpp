@@ -51,7 +51,7 @@ int main(void)
   float *bulkPressure;
   bulkPressure = (float *)calloc(DIM, sizeof(float));
   float **shearTensor;
-  shearTensor = calloc2dArray(shearTensor, 6, DIM); //calculate 6 components, can check tracelessness for accuracy
+  shearTensor = calloc2dArray(shearTensor, 10, DIM); //calculate 6 components, can check tracelessness for accuracy
 
   //initialize energy density
   printf("setting initial conditions on energy density\n");
@@ -126,7 +126,7 @@ int main(void)
   free2dArray(flowVelocity, 4);
   free(pressure);
   free(bulkPressure);
-  free2dArray(shearTensor, 6);
+  free2dArray(shearTensor, 10);
 
   printf("Done... Goodbye!\n");
 }

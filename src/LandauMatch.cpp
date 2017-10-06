@@ -178,13 +178,18 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
-    // can solve for all 10 components here if I want/need to, just chose 5 at random
-    float c = energyDensity[is] + pressure[is] + bulkPressure[is];
-    shearTensor[0][is] = stressTensor[1][is] - flowVelocity[0][is] * flowVelocity[1][is] * c; //pi^(tau,x)
-    shearTensor[1][is] = stressTensor[2][is] - flowVelocity[0][is] * flowVelocity[2][is] * c; //pi^(tau,y)
-    shearTensor[2][is] = stressTensor[3][is] - flowVelocity[0][is] * flowVelocity[3][is] * c; //pi^(tau,eta)
-    shearTensor[3][is] = stressTensor[5][is] - flowVelocity[1][is] * flowVelocity[2][is] * c; //pi^(x,y)
-    shearTensor[4][is] = stressTensor[6][is] - flowVelocity[1][is] * flowVelocity[3][is] * c; //pi^(x,eta)
-    shearTensor[5][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * c; //pi^(y,eta)
+    //calculate ten components : upper triangular part
+    float b = energyDensity[is] + pressure[is] + bulkPressure[is];
+    float c = pressure[is] + bulkPressure[is];
+    shearTensor[0][is] = stressTensor[0][is] - flowVelocity[0][is] * flowVelocity[0][is] * b + c; //pi^(tau,tau)
+    shearTensor[1][is] = stressTensor[1][is] - flowVelocity[0][is] * flowVelocity[1][is] * b; //pi^(tau,x)
+    shearTensor[2][is] = stressTensor[2][is] - flowVelocity[0][is] * flowVelocity[2][is] * b; //pi^(tau,y)
+    shearTensor[3][is] = stressTensor[3][is] - flowVelocity[0][is] * flowVelocity[3][is] * b; //pi^(tau,eta)
+    shearTensor[4][is] = stressTensor[4][is] - flowVelocity[1][is] * flowVelocity[1][is] * b - c; //pi^(x,x)
+    shearTensor[5][is] = stressTensor[5][is] - flowVelocity[1][is] * flowVelocity[2][is] * b; //pi^(x,y)
+    shearTensor[6][is] = stressTensor[6][is] - flowVelocity[1][is] * flowVelocity[3][is] * b; //pi^(x,eta)
+    shearTensor[7][is] = stressTensor[7][is] - flowVelocity[2][is] * flowVelocity[2][is] * b - c; //pi^(y,y)
+    shearTensor[8][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * b; //pi^(y,eta)
+    shearTensor[9][is] = stressTensor[9][is] - flowVelocity[3][is] * flowVelocity[3][is] * b - c * (1.0/(TAU*TAU)); //pi^(eta,eta)
   }
 }
