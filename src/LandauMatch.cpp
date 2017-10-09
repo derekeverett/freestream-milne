@@ -68,7 +68,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
-  float tolerance = 1e10; //set quantities to zero which are less than 10^(-18) if REGULATE is true
+  float tolerance = 1.0e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -131,7 +131,37 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
 
-      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0.0)
+      // begin new code that tries to select timelike eigenvector
+      double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
+      double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
+      double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
+      double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
+      double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + TAU*TAU*v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
+      double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
+      //try selecting timelike eigenvector
+      if (minkowskiLength > 0.0)
+      {
+        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
+        //if (energyDensity[is] < 0.0) printf("negative energy density! e = %f\n", energyDensity[is]);
+        flowVelocity[0][is] = v0 * scaleFactor;
+        flowVelocity[1][is] = v1 * scaleFactor;
+        flowVelocity[2][is] = v2 * scaleFactor;
+        flowVelocity[3][is] = v3 * scaleFactor;
+
+        if (REGULATE && (energyDensity[is] * tolerance < 1.0)) //regulate very dilute regions of space
+        {
+          energyDensity[is] = 0.0;
+          flowVelocity[0][is] = 1.0;
+          flowVelocity[1][is] = 0.0;
+          flowVelocity[2][is] = 0.0;
+          flowVelocity[3][is] = 0.0;
+        }
+      }
+      //end new code
+
+      //begin old code that checks energy density rather than if flow is timelike
+      /*
+      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0.0) //try checking if eigenvector is timelike instead! see above
       {
         double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
         double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
@@ -143,11 +173,11 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
         //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
         //set values of energy density and flow velocity
-
+        if (scaleFactor != scaleFactor) printf("NANNY NAN!\n");
         if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions - check if this helps or not
         {
           energyDensity[is] = 0.0;
-          flowVelocity[0][is] = 0.0;
+          flowVelocity[0][is] = 1.0;
           flowVelocity[1][is] = 0.0;
           flowVelocity[2][is] = 0.0;
           flowVelocity[3][is] = 0.0;
@@ -158,6 +188,8 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         flowVelocity[2][is] = v2 * scaleFactor;
         flowVelocity[3][is] = v3 * scaleFactor;
       }
+      */
+      //ends old code
     }
   }
 }

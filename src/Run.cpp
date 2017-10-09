@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <time.h>
 #include <omp.h>
-//using namespace std;
 
 int main(void)
 {
@@ -19,6 +18,8 @@ int main(void)
   printf("Parameters are ...\n");
   printf("(DIM_X, DIM_Y, DIM_ETA) = (%d, %d, %d)\n", DIM_X, DIM_Y, DIM_ETA);
   printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", DX, DY, DETA, DTAU);
+  if (EOS_TYPE == 1) printf("Using EOS : Conformal \n");
+  else if (EOS_TYPE == 2) printf("Using EOS : Wuppertal-Budhapest \n");
 
   //allocate and initialize memory
   printf("Allocating memory\n");
@@ -80,14 +81,11 @@ int main(void)
   writeScalarToFile(initialEnergyDensity, "initial_e");
   writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection");
 
-  //read in the initial energy density profile (from file)
-  //readInitialEnergyDensity(initialEnergyDensity);
-
-  //convert the energy density profile into the initial density profile to be streamed - just a normalization
+  //convert the energy density profile into the initial density profile to be streamed
   convertInitialDensity(initialEnergyDensity, density);
 
   //perform the free streaming time-update step
-  //pretabulate trig and hypertrig functions before this step to save time
+  //pretabulate trig and hypertrig functions before this step to save time?
   printf("performing the free streaming time step\n");
   double sec;
   sec = omp_get_wtime();
@@ -104,7 +102,7 @@ int main(void)
   sec = omp_get_wtime() - sec;
   printf("calculating trig table took %f seconds\n", sec);
 
-  //calculate the ten independent components of the stress tensor by integrating over momentum angles
+  //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
   printf("calculating independent components of stress tensor\n");
   sec = omp_get_wtime();
   calculateStressTensor(stressTensor, shiftedDensity, hypertrigTable);
