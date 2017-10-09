@@ -7,7 +7,7 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
 
-#define REGULATE 0 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
+#define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
 
 void calculateHypertrigTable(float ****hypertrigTable)
 {
@@ -68,7 +68,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 }
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
-  float tolerance = 1e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
+  float tolerance = 1e10; //set quantities to zero which are less than 10^(-18) if REGULATE is true
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)

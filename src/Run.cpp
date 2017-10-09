@@ -54,10 +54,22 @@ int main(void)
   shearTensor = calloc2dArray(shearTensor, 10, DIM); //calculate 6 components, can check tracelessness for accuracy
 
   //initialize energy density
-  printf("setting initial conditions on energy density\n");
-  if (INITCOND == 1) initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
-  else if (INITCOND == 2) initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
-  else if (INITCOND == 3) initializeMCGlbPlus(initialEnergyDensity);
+  printf("setting initial conditions on energy density : ");
+  if (INITCOND == 1)
+    {
+      initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+      printf("smooth oblate gaussian \n");
+    }
+  else if (INITCOND == 2)
+    {
+      initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+      printf("fluctuating oblate gaussian \n");
+    }
+  else if (INITCOND == 3)
+    {
+      readEnergyDensitySuperMCBlock(initialEnergyDensity, 2.0, 1.0);
+      printf("reading superMC block format file from data directory \n");
+    }
   else
   {
     printf("Not a valid initial condition - Goodbye\n");
