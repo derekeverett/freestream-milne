@@ -85,10 +85,10 @@ void readEnergyDensitySuperMCBlock(float *density, float etaWidth, float etaFlat
   //first read in the transverse profile from superMC block data format
   float temp = 0.0;
   std::ifstream superMCFile;
-  superMCFile.open("data/ed_event_7_block.dat");
-  for (int iy = 0; iy < DIM_Y; iy++)
+  superMCFile.open("initial_superMC_ed/data_12_2760_2.5fm_51pts/ed_event_7_block.dat");
+  for (int ix = 0; ix < DIM_X; ix++)
   {
-    for (int ix = 0; ix < DIM_X; ix++)
+    for (int iy = 0; iy < DIM_Y; iy++)
     {
       superMCFile >> temp;
       for (int ieta = 0; ieta < DIM_ETA; ieta++) //copy the same value for all eta, then we will multiply by eta dependent function
@@ -113,4 +113,34 @@ void readEnergyDensitySuperMCBlock(float *density, float etaWidth, float etaFlat
     arg = arg * THETA_FUNCTION(abs(eta) - etaFlat);
     density[is] = density[is] * exp(arg);
   }
+}
+
+void readEnergyDensityFile(float *density)
+{
+  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
+  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
+  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
+
+  std::ifstream edFile;
+  edFile.open("initial_ed/ed.dat");
+  for (int irow = 0; irow < DIM; irow++)
+  {
+    float x;
+    float y;
+    float eta;
+    float epsilon;
+
+    edFile >> x;
+    edFile >> y;
+    edFile >> eta;
+    edFile >> epsilon;
+
+    int ix = (int)round((x - xmin) / DX);
+    int iy = (int)round((y - ymin) / DY);
+    int ieta = (int)round((eta - etamin) / DETA);
+    int is = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy) + ieta;
+
+    density[is] = epsilon;
+  }
+
 }

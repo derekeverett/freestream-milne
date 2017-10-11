@@ -28,8 +28,8 @@ int main(void)
   initialEnergyDensity = (float *)calloc(DIM, sizeof(float));
   //the initial density G(tilde)^(tau,tau) at time t0
   float **density;
-  density = calloc2dArray(density, DIM, DIM_ETA); // function of x,y,eta and rapidity
-  //the shited density profile G^(tau,tau) at time t
+  density = calloc2dArray(density, DIM, DIM_RAP); // function of x,y,eta and rapidity
+  //the shifted density profile G^(tau,tau) at time t
   float ***shiftedDensity;
   shiftedDensity = calloc3dArray(shiftedDensity, DIM, DIM_RAP, DIM_PHIP);
   //the ten independent components of the stress tensor
@@ -63,12 +63,12 @@ int main(void)
     }
   else if (INITCOND == 2)
     {
-      initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+      initializeEllipticalMCGauss(initialEnergyDensity, 0.5, 1.0, 1.0);
       printf("fluctuating oblate gaussian \n");
     }
   else if (INITCOND == 3)
     {
-      readEnergyDensitySuperMCBlock(initialEnergyDensity, 0.5, 0.5);
+      readEnergyDensitySuperMCBlock(initialEnergyDensity, ETA_WIDTH, ETA_FLAT);
       printf("reading superMC block format file from data directory \n");
     }
   else

@@ -60,9 +60,10 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
-          stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * DRAP * d_phip;
+          stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
         }
       }
+      stressTensor[ivar][is] = stressTensor[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
     }
   }
 }
