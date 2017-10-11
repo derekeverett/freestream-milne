@@ -68,7 +68,7 @@ int main(void)
     }
   else if (INITCOND == 3)
     {
-      readEnergyDensitySuperMCBlock(initialEnergyDensity, 2.0, 1.0);
+      readEnergyDensitySuperMCBlock(initialEnergyDensity, 0.5, 0.5);
       printf("reading superMC block format file from data directory \n");
     }
   else
