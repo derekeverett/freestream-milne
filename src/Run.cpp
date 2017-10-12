@@ -71,6 +71,11 @@ int main(void)
       readEnergyDensitySuperMCBlock(initialEnergyDensity, ETA_WIDTH, ETA_FLAT);
       printf("reading superMC block format file from data directory \n");
     }
+  else if (INITCOND == 4)
+    {
+      readDensityFile(initialEnergyDensity, "initial_profiles/ed");
+      printf("reading initial energy density from initial_profiles directory \n");
+    }
   else
   {
     printf("Not a valid initial condition - Goodbye\n");

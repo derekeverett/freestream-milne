@@ -114,33 +114,3 @@ void readEnergyDensitySuperMCBlock(float *density, float etaWidth, float etaFlat
     density[is] = density[is] * exp(arg);
   }
 }
-
-void readEnergyDensityFile(float *density)
-{
-  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
-  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
-  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
-
-  std::ifstream edFile;
-  edFile.open("initial_ed/ed.dat");
-  for (int irow = 0; irow < DIM; irow++)
-  {
-    float x;
-    float y;
-    float eta;
-    float epsilon;
-
-    edFile >> x;
-    edFile >> y;
-    edFile >> eta;
-    edFile >> epsilon;
-
-    int ix = (int)round((x - xmin) / DX);
-    int iy = (int)round((y - ymin) / DY);
-    int ieta = (int)round((eta - etamin) / DETA);
-    int is = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy) + ieta;
-
-    density[is] = epsilon;
-  }
-
-}

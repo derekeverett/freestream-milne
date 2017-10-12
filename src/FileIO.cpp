@@ -105,3 +105,35 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
   }
   myfile.close();
 }
+
+void readDensityFile(float *density, char name[255])
+{
+  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
+  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
+  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
+
+  char filename[255] = "";
+  sprintf(filename, "%s.dat", name);
+  std::ifstream infile;
+  infile.open(filename);
+  for (int irow = 0; irow < DIM; irow++)
+  {
+    float x;
+    float y;
+    float eta;
+    float value;
+
+    infile >> x;
+    infile >> y;
+    infile >> eta;
+    infile >> value;
+
+    int ix = (int)round((x - xmin) / DX);
+    int iy = (int)round((y - ymin) / DY);
+    int ieta = (int)round((eta - etamin) / DETA);
+    int is = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy) + ieta;
+
+    density[is] = value;
+  }
+  infile.close();
+}

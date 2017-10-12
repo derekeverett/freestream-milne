@@ -23,7 +23,7 @@ INITCOND sets initial condition.
 #define DTAU 0.5f //free streaming longitudinal proper time step size
 #define TAU0 0.1f //initial longitudinal proper time
 #define TAU (TAU0 + DTAU) //final matching longitudinal proper time
-#define EOS_TYPE 2 // 1 : conformal EOS;  2 : Wuppertal-Budhapest parameterization
+#define EOS_TYPE 1 // 1 : conformal EOS;  2 : Wuppertal-Budhapest parameterization
 
 //These parameters work well for the fluctuating oblate gaussian with the given widths.
 /*
