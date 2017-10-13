@@ -132,6 +132,32 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
 
+      //this is the code that Jia Liu uses. Why does it work for him?
+      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
+      {
+        gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
+        gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);
+        gsl_complex v2 = gsl_matrix_complex_get(eigen_vectors, 2 , i);
+        gsl_complex v3 = gsl_matrix_complex_get(eigen_vectors, 3 , i);
+
+        if (GSL_IMAG(v0) == 0 && (3.0 * GSL_REAL(v0) * GSL_REAL(v0)-1) > 0) //choose eigenvector
+        {
+          //why does he use this as a scaling factor???
+          //double factor = sqrt(1.0 / (3.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1));
+          //I think we should scale by minkowski length to get u^(mu)u_(mu) = 1
+          double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + GSL_REAL(v3)*GSL_REAL(v3));
+          double factor = 1.0 / sqrt(minkowskiLength);
+
+          if (GSL_REAL(v0) < 0) factor=-factor;
+
+          energyDensity[is] = GSL_REAL(eigenvalue) / abs(factor);
+          flowVelocity[0][is] = GSL_REAL(v0) * factor;
+          flowVelocity[1][is] = GSL_REAL(v1) * factor;
+          flowVelocity[2][is] = GSL_REAL(v2) * factor;
+          flowVelocity[3][is] = GSL_REAL(v3) * factor;
+        }
+      }
+      /*
       // begin new code that tries to select timelike eigenvector
       double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
       double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
@@ -159,7 +185,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         }
       }
       //end new code
-
+      */
       //begin old code that checks energy density rather than if flow is timelike
       /*
       if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0.0) //try checking if eigenvector is timelike instead! see above

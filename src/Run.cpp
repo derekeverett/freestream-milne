@@ -58,7 +58,7 @@ int main(void)
   printf("setting initial conditions on energy density : ");
   if (INITCOND == 1)
     {
-      initializeEllipticalGauss(initialEnergyDensity, 0.5, 1.0, 3.0);
+      initializeEllipticalGauss(initialEnergyDensity, 1.0, 1.0, 1.0);
       printf("smooth oblate gaussian \n");
     }
   else if (INITCOND == 2)
@@ -133,6 +133,9 @@ int main(void)
   writeVectorToFile(flowVelocity, "u_x", 1);
   writeVectorToFile(flowVelocity, "u_y", 2);
   writeVectorToFile(flowVelocity, "u_eta", 3);
+  writeVectorToFileProjection(flowVelocity, "u_x_projection", 1);
+  writeVectorToFileProjection(flowVelocity, "u_y_projection", 2);
+  writeVectorToFileProjection(flowVelocity, "u_z_projection", 3);
 
   //free the memory
   free(initialEnergyDensity);
