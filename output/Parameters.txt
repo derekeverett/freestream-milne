@@ -8,7 +8,8 @@ INITCOND sets initial condition.
 #define INITCOND 1
 #define ETA_WIDTH 0.5f //these are the two parameters appearing in the distribution of energy density
 #define ETA_FLAT 0.5f // found in GPU-VH (see arXiv:1608.06577v1 p. 38)
-#define SIGMA 1.0f //the width of the gaussian distribution in (y - eta) of particle distribution function. Generalize this to a spacetime function?
+#define SIGMA 1.0f //the width of the gaussian distribution in (y - eta) of particle distribution function.
+//Generalize this to a spacetime function?
 #define PI 3.141592654f //question bro?
 #define DIM_X 51 //number of grid points in x direction
 #define DIM_Y 51 //number of grid points in y direction
@@ -30,7 +31,8 @@ INITCOND sets initial condition.
 #define INITCOND 2
 #define ETA_WIDTH 0.5f //these are the two parameters appearing in the distribution of energy density
 #define ETA_FLAT 0.5f // found in GPU-VH (see arXiv:1608.06577v1 p. 38)
-#define SIGMA 1.0f //the width of the gaussian distribution in (y - eta) of particle distribution function. Generalize this to a spacetime function?
+#define SIGMA 1.0f //the width of the gaussian distribution in (y - eta) of particle distribution function. 
+//Generalize this to a spacetime function?
 #define PI 3.141592654f //question bro?
 #define DIM_X 51 //number of grid points in x direction
 #define DIM_Y 51 //number of grid points in y direction
