@@ -1,4 +1,4 @@
-void calculatePressure(float *energyDensity, float *pressure)
+void calculatePressure(float *energyDensity, float *baryonDensity, float *pressure)
 {
   //conformal eqn of state
   if (EOS_TYPE == 1)
@@ -9,7 +9,7 @@ void calculatePressure(float *energyDensity, float *pressure)
     }
   }
   //parameterization from Wuppertal-Budapest collaboration, taken from cpu-vh/.../EquationOfState.cpp
-  else
+  else if (EOS_TYPE == 2)
   {
     float a0 = -0.25181736420168666;
     float a1 = 9737.845799644809;
@@ -58,5 +58,13 @@ void calculatePressure(float *energyDensity, float *pressure)
       float b = (float)fmaf(b12,e12,fmaf(b11,e11,fmaf(b10,e10,fmaf(b9,e9,fmaf(b8,e8,fmaf(b7,e7,fmaf(b6,e6,fmaf(b5,e5,fmaf(b4,e4,fmaf(b3,e3,fmaf(b2,e2,fmaf(b1,e1,b0))))))))))));
       pressure[is] = a / b;
     }
+  }
+  //import lattice qcd tables for finite baryon density and interpolate
+  else if (EOS_TYPE == 3)
+  {
+    for (int is = 0; is < DIM; is++)
+    {
+      pressure[is] = 0.0; //fix this! just a placeholder for an interpolation of tables
+    }  
   }
 }

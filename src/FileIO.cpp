@@ -137,3 +137,47 @@ void readDensityFile(float *density, char name[255])
   }
   infile.close();
 }
+/*
+void readInParameters(
+int *INITCOND,
+float *ETA_WIDTH,
+float *ETA_FLAT,
+float *SIGMA,
+float *PI,
+int *DIM_X,
+int *DIM_Y,
+int *DIM_ETA,
+int *DIM_RAP,
+int *DIM_PHIP,
+float *DX,
+float *DY,
+float *DETA,
+float *DRAP,
+float *DTAU,
+float *TAU0,
+int *EOS_TYPE)
+{
+  char dummy[255] = "";
+  std::ifstream infile;
+  infile.open("parameters.dat");
+  infile >> dummy >> *INITCOND;
+  infile >> dummy >> *ETA_WIDTH;
+  infile >> dummy >> *ETA_FLAT;
+  infile >> dummy >> *SIGMA;
+  infile >> dummy >> *PI;
+  infile >> dummy >> *DIM_X;
+  infile >> dummy >> *DIM_Y;
+  infile >> dummy >> *DIM_ETA;
+  infile >> dummy >> *DIM_RAP;
+  infile >> dummy >> *DIM_PHIP;
+  infile >> dummy >> *DX;
+  infile >> dummy >> *DY;
+  infile >> dummy >> *DETA;
+  infile >> dummy >> *DETA;
+  infile >> dummy >> *DRAP;
+  infile >> dummy >> *DTAU;
+  infile >> dummy >> *TAU0;
+  infile >> dummy >> *EOS_TYPE;
+  infile.close();
+}
+*/

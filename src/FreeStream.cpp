@@ -72,3 +72,30 @@ void convertInitialDensity(float *initialEnergyDensity, float **density)
 
   }
 }
+//this creates the initial J^(tau) function, a function of spatial coordinates and rapidity
+//rapidity dependence is determined by the assumption for rapidity dependence of the initial baryon distribution function
+void convertInitialChargeDensity(float *initialChargeDensity, float **chargeDensity)
+{
+  float n = sqrt(2.0 * PI) * SIGMA_B * exp(SIGMA_B * SIGMA_B / 2.0); //the integral over cosh * exp()
+  float norm_factor = 1.0 / (2.0 * PI * n); //the normalization constant relating the intial baryon density to the intial charge density profile J(tilde)^(tau)
+
+  float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
+  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
+
+  for (int is = 0; is < DIM; is++)
+  {
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+    float eta = (float)ieta * DETA  + etamin;
+
+    for (int irap = 0; irap < DIM_RAP; irap++)
+    {
+      float rap = (float)irap * DRAP + rapmin;
+      float rap_factor = cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA_B * SIGMA_B));
+      chargeDensity[is][irap] = initialChargeDensity[is] * norm_factor * rap_factor; //this is initial J^(tau)
+    }
+
+  }
+}

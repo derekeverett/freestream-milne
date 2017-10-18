@@ -67,6 +67,34 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
     }
   }
 }
+
+void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ****hypertrigTable)
+{
+  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+
+  for (int ivar = 0; ivar < 4; ivar++)
+  {
+    #pragma omp parallel for simd
+    for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
+    {
+      int ix = is / (DIM_Y * DIM_ETA);
+      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+      for (int irap = 0; irap < DIM_RAP; irap++)
+      {
+        for (int iphip = 0; iphip < DIM_PHIP; iphip++)
+        {
+          //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
+          // T^(mu,nu) = int deta int dphip G^(mu,nu)
+          baryonCurrent[ivar][is] += shiftedChargeDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+        }
+      }
+      baryonCurrent[ivar][is] = baryonCurrent[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
+    }
+  }
+}
+
 void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
 {
   float tolerance = 1.0e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
@@ -250,5 +278,27 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
     shearTensor[7][is] = stressTensor[7][is] - flowVelocity[2][is] * flowVelocity[2][is] * b - c; //pi^(y,y)
     shearTensor[8][is] = stressTensor[8][is] - flowVelocity[2][is] * flowVelocity[3][is] * b; //pi^(y,eta)
     shearTensor[9][is] = stressTensor[9][is] - flowVelocity[3][is] * flowVelocity[3][is] * b - c * (1.0/(TAU*TAU)); //pi^(eta,eta)
+  }
+}
+
+// n_B = u^(mu)j_(mu)
+void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float **flowVelocity)
+{
+  #pragma omp parallel for simd
+  for (int is = 0; is < DIM; is++)
+  {
+    baryonDensity[is] = (flowVelocity[0][is] * baryonCurrent[0][is]) - (flowVelocity[1][is] * baryonCurrent[1][is]) - (flowVelocity[2][is] * baryonCurrent[2][is]) - (TAU * TAU * flowVelocity[3][is] * baryonCurrent[3][is]);
+  }
+}
+// V^(mu) = j^(mu) - n_B * u^(mu)
+void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, float *baryonDensity, float **flowVelocity)
+{
+  for (int ivar = 0; ivar < 4; ivar++)
+  {
+    #pragma omp parallel for simd
+    for (int is = 0; is < DIM; is++)
+    {
+      baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);
+    }
   }
 }
