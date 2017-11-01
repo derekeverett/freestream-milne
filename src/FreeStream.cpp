@@ -10,18 +10,20 @@ void freeStream(float **density, float ***shiftedDensity)
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+    float x = (float)ix * DX  + xmin;
+    float y = (float)iy * DY  + ymin;
+    float eta = (float)ieta * DETA  + etamin;
+
     for (int irap = 0; irap < DIM_RAP; irap++)
     {
+      float rap = (float)irap * DRAP + rapmin;
+
       for (int iphip = 0; iphip < DIM_PHIP; iphip++)
       {
-        int ix = is / (DIM_Y * DIM_ETA);
-        int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
-        int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
-
-        float x = (float)ix * DX  + xmin;
-        float y = (float)iy * DY  + ymin;
-        float eta = (float)ieta * DETA  + etamin;
-        float rap = (float)irap * DRAP + rapmin;
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
         //can these trig and hypertrig functions be tabulated ahead of time?
