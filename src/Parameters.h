@@ -8,7 +8,7 @@
 // 2 : Fluctuating Oblate Gaussian
 // 3 : read in from data file in whitespace delimited format : x y eta n_B(x,y,eta)
 #define BARYON 0 //if true, code will freestream baryon current as well as stress tensor
-#define IC_ENERGY 3
+#define IC_ENERGY 1
 #define IC_BARYON 1
 #define ETA_WIDTH 0.5f //these are the two parameters appearing in the distribution of energy density if one chooses to use MCGlb initial trasnverse profile
 #define ETA_FLAT 0.5f // found in GPU-VH (see arXiv:1608.06577v1 p. 38)
@@ -16,16 +16,16 @@
 //Generalize this to a spacetime function?
 #define SIGMA_B 1.0f //the width of the gaussian distribution in (y - eta) of baryon distribution function.
 #define PI 3.141592654f //question bro?
-#define DIM_X 201 //number of grid points in x direction
-#define DIM_Y 201 //number of grid points in y direction
-#define DIM_ETA 201 //number of grid points in eta (spacetime rapidity) direction
+#define DIM_X 51 //number of grid points in x direction
+#define DIM_Y 51 //number of grid points in y direction
+#define DIM_ETA 51 //number of grid points in eta (spacetime rapidity) direction
 #define DIM (DIM_X * DIM_Y * DIM_ETA) //total number of spatial grid points
 #define DIM_RAP 31 //number of grid points in momentum rapidity
 #define DIM_PHIP 31 //number of grid points in phi_p momentum azimuthal angle
 #define DX 0.1f //spacing of grid in x direction
 #define DY 0.1f //spacing of grid in y direction
 #define DETA 0.1f //spacing of grid in eta direction
-#define DRAP 1.0f //spacing of grid in momentum rapidity
+#define DRAP 0.5f //spacing of grid in momentum rapidity
 #define DTAU 0.1f //free streaming longitudinal proper time step size
 #define TAU0 0.1f //initial longitudinal proper time
 #define TAU (TAU0 + DTAU) //final matching longitudinal proper time
