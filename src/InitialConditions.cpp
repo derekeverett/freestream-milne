@@ -1,19 +1,28 @@
+#pragma once
 #include <math.h>
 #include <stdlib.h>
 #include <fstream>
-
+#include "Parameter.h"
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
-void initializeZero(float *density)
+void initializeZero(float *density, parameters params)
 {
+  int DIM = params.DIM;
   for (int is = 0; is < DIM; is++)
   {
     density[is] = 0.0;
   }
 }
 
-void initializeGauss(float *density, float b) // b is the variance ('spherically' symmetric)
+void initializeGauss(float *density, float b, parameters params) // b is the variance ('spherically' symmetric)
 {
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -29,8 +38,16 @@ void initializeGauss(float *density, float b) // b is the variance ('spherically
   }
 }
 
-void initializeEllipticalGauss(float *density, float bx, float by, float beta) // bx is the x variance etc...
+void initializeEllipticalGauss(float *density, float bx, float by, float beta, parameters params) // bx is the x variance etc...
 {
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -46,8 +63,16 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta) /
   }
 }
 
-void initializeMCGauss(float * density, float b)
+void initializeMCGauss(float * density, float b, parameters params)
 {
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -63,8 +88,16 @@ void initializeMCGauss(float * density, float b)
   }
 }
 
-void initializeEllipticalMCGauss(float *density, float bx, float by, float beta) // bx is the x variance etc...
+void initializeEllipticalMCGauss(float *density, float bx, float by, float beta, parameters params) // bx is the x variance etc...
 {
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -80,8 +113,16 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta)
   }
 }
 
-void readEnergyDensitySuperMCBlock(float *density, float etaWidth, float etaFlat)
+void readEnergyDensitySuperMCBlock(float *density, parameters params)
 {
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float ETA_WIDTH = params.ETA_WIDTH;
+  float ETA_FLAT = params.ETA_FLAT;
+  float DETA = params.DETA;
+
   //first read in the transverse profile from superMC block data format
   float temp = 0.0;
   std::ifstream superMCFile;
@@ -109,8 +150,8 @@ void readEnergyDensitySuperMCBlock(float *density, float etaWidth, float etaFlat
 
     float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
     //here we use a the same profile as GPU-VH (see arXiv:1608.06577v1 p. 38)
-    float arg = (-1.0) * (abs(eta) - etaFlat) * (abs(eta) - etaFlat) / (2.0 * etaWidth * etaWidth);
-    arg = arg * THETA_FUNCTION(abs(eta) - etaFlat);
+    float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
+    arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
     density[is] = density[is] * exp(arg);
   }
 }

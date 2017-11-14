@@ -1,9 +1,19 @@
+#pragma once
 #include <unistd.h>
 #include <stdio.h>
 #include <fstream>
+#include <sstream>
+#include <string>
+#include "Parameter.h"
 
-void writeScalarToFile(float *var, char name[255])
+void writeScalarToFile(float *var, char name[255], parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
   char cwd[1024];
   getcwd(cwd, sizeof(cwd));
   std::ofstream myfile;
@@ -32,8 +42,14 @@ void writeScalarToFile(float *var, char name[255])
   myfile.close();
 }
 
-void writeVectorToFile(float **var, char name[255], int idx)
+void writeVectorToFile(float **var, char name[255], int idx, parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
   char cwd[1024];
   getcwd(cwd, sizeof(cwd));
   std::ofstream myfile;
@@ -64,8 +80,11 @@ void writeVectorToFile(float **var, char name[255], int idx)
 
 //this function writes the transverse density of a variable at z = 0
 // as regularly spaced values
-void writeScalarToFileProjection(float *var, char name[255])
+void writeScalarToFileProjection(float *var, char name[255], parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
   char cwd[1024];
   getcwd(cwd, sizeof(cwd));
   std::ofstream myfile;
@@ -85,8 +104,11 @@ void writeScalarToFileProjection(float *var, char name[255])
   myfile.close();
 }
 
-void writeVectorToFileProjection(float **var, char name[255], int idx)
+void writeVectorToFileProjection(float **var, char name[255], int idx, parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
   char cwd[1024];
   getcwd(cwd, sizeof(cwd));
   std::ofstream myfile;
@@ -106,8 +128,14 @@ void writeVectorToFileProjection(float **var, char name[255], int idx)
   myfile.close();
 }
 
-void readDensityFile(float *density, char name[255])
+void readDensityFile(float *density, char name[255], parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
   float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
   float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
@@ -132,47 +160,61 @@ void readDensityFile(float *density, char name[255])
   }
   infile.close();
 }
-/*
-void readInParameters(
-int *INITCOND,
-float *ETA_WIDTH,
-float *ETA_FLAT,
-float *SIGMA,
-float *PI,
-int *DIM_X,
-int *DIM_Y,
-int *DIM_ETA,
-int *DIM_RAP,
-int *DIM_PHIP,
-float *DX,
-float *DY,
-float *DETA,
-float *DRAP,
-float *DTAU,
-float *TAU0,
-int *EOS_TYPE)
+
+void readInParameters(struct parameters &params)
 {
-  char dummy[255] = "";
-  std::ifstream infile;
-  infile.open("parameters.dat");
-  infile >> dummy >> *INITCOND;
-  infile >> dummy >> *ETA_WIDTH;
-  infile >> dummy >> *ETA_FLAT;
-  infile >> dummy >> *SIGMA;
-  infile >> dummy >> *PI;
-  infile >> dummy >> *DIM_X;
-  infile >> dummy >> *DIM_Y;
-  infile >> dummy >> *DIM_ETA;
-  infile >> dummy >> *DIM_RAP;
-  infile >> dummy >> *DIM_PHIP;
-  infile >> dummy >> *DX;
-  infile >> dummy >> *DY;
-  infile >> dummy >> *DETA;
-  infile >> dummy >> *DETA;
-  infile >> dummy >> *DRAP;
-  infile >> dummy >> *DTAU;
-  infile >> dummy >> *TAU0;
-  infile >> dummy >> *EOS_TYPE;
-  infile.close();
+  char dummyChar[255];
+  int dummyInt;
+  float dummyFloat;
+
+  FILE *fileIn;
+  std::stringstream paramsStream;
+  paramsStream << "parameters.dat";
+  fileIn = fopen(paramsStream.str().c_str(),"r");
+
+  if (fileIn == NULL)
+  {
+    printf("Couldn't open parameters.dat . Using default values!\n");
+  }
+
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.BARYON = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.IC_ENERGY = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.IC_BARYON = dummyInt;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.ETA_WIDTH = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.ETA_FLAT = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.SIGMA = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.SIGMA_B = dummyFloat;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.DIM_X = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.DIM_Y = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.DIM_ETA = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.DIM_RAP = dummyInt;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.DIM_PHIP = dummyInt;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.DX = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.DY = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.DETA = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.DRAP = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.DTAU = dummyFloat;
+  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+  params.TAU0 = dummyFloat;
+  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+  params.EOS_TYPE = dummyInt;
+
+  fclose(fileIn);
 }
-*/

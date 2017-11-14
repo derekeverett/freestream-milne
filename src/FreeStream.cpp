@@ -1,7 +1,22 @@
+#pragma once
 #include <math.h>
-
-void freeStream(float **density, float ***shiftedDensity)
+#include "Parameter.h"
+#define PI 3.141592654f
+void freeStream(float **density, float ***shiftedDensity, parameters params)
 {
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  int DIM_RAP = params.DIM_RAP;
+  int DIM_PHIP = params.DIM_PHIP;
+  int DIM = params.DIM;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
+  float DRAP = params.DRAP;
+  float TAU0 = params.TAU0;
+  float TAU = params.TAU;
+
   float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
   float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
@@ -49,8 +64,18 @@ void freeStream(float **density, float ***shiftedDensity)
 }
 //this creates the initial G^(tau,tau) function, a function of spatial coordinates and rapidity
 //rapidity dependence is determined by the assumption for rapidity dependence of the initial distribution function
-void convertInitialDensity(float *initialEnergyDensity, float **density)
+void convertInitialDensity(float *initialEnergyDensity, float **density, parameters params)
 {
+  float SIGMA = params.SIGMA;
+  int DIM = params.DIM;
+  //int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+
+  int DIM_RAP = params.DIM_RAP;
+  float DRAP = params.DRAP;
+  float DETA = params.DETA;
+
   float n = (sqrt(PI) / 2.0) * SIGMA * (1.0 + exp(SIGMA * SIGMA)); //the integral over cosh^2 * exp()
   float norm_factor = 1.0 / (2.0 * PI * n); //the normalization constant relating the intial energy density to the intial density profile G(tilde)^(tau,tau)
 
@@ -76,8 +101,18 @@ void convertInitialDensity(float *initialEnergyDensity, float **density)
 }
 //this creates the initial J^(tau) function, a function of spatial coordinates and rapidity
 //rapidity dependence is determined by the assumption for rapidity dependence of the initial baryon distribution function
-void convertInitialChargeDensity(float *initialChargeDensity, float **chargeDensity)
+void convertInitialChargeDensity(float *initialChargeDensity, float **chargeDensity, parameters params)
 {
+  float SIGMA_B = params.SIGMA_B;
+  int DIM = params.DIM;
+  //int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+
+  int DIM_RAP = params.DIM_RAP;
+  float DRAP = params.DRAP;
+  float DETA = params.DETA;
+
   float n = sqrt(2.0 * PI) * SIGMA_B * exp(SIGMA_B * SIGMA_B / 2.0); //the integral over cosh * exp()
   float norm_factor = 1.0 / (2.0 * PI * n); //the normalization constant relating the intial baryon density to the intial charge density profile J(tilde)^(tau)
 

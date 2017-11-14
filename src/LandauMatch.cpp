@@ -1,4 +1,5 @@
 //trigTable is a table with 10 rows for ten combinations or p^(mu)p_(nu) normalized by the energy
+#pragma once
 #include <stdio.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_blas.h>
@@ -6,11 +7,19 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
-
+#include "Parameter.h"
+#define PI 3.141592654f
 #define REGULATE 1 // 1 to regulate dilute regions of space, sets energy density to zero if < tolerance
 
-void calculateHypertrigTable(float ****hypertrigTable)
+void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
+  int DIM_RAP = params.DIM_RAP;
+  int DIM_PHIP = params.DIM_PHIP;
+  int DIM_ETA = params.DIM_ETA;
+  float DRAP = params.DRAP;
+  float DETA = params.DETA;
+  float TAU = params.TAU;
+
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
   #pragma omp parallel for simd
@@ -41,8 +50,17 @@ void calculateHypertrigTable(float ****hypertrigTable)
   }
 }
 
-void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable)
+void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable, parameters params)
 {
+  //int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  int DIM_RAP = params.DIM_RAP;
+  int DIM_PHIP = params.DIM_PHIP;
+  int DIM = params.DIM;
+  float DRAP = params.DRAP;
+  //float TAU = params.TAU;
+
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 10; ivar++)
@@ -68,8 +86,16 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
   }
 }
 
-void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ****hypertrigTable)
+void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ****hypertrigTable, parameters params)
 {
+  //int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  int DIM_RAP = params.DIM_RAP;
+  int DIM_PHIP = params.DIM_PHIP;
+  int DIM = params.DIM;
+  float DRAP = params.DRAP;
+
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 4; ivar++)
@@ -95,8 +121,11 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
   }
 }
 
-void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity)
+void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity, parameters params)
 {
+  int DIM = params.DIM;
+  float TAU = params.TAU;
+
   float tolerance = 1.0e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
 
   #pragma omp parallel for simd
@@ -248,8 +277,10 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     }
   }
 }
-void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure)
+void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure, parameters params)
 {
+  int DIM = params.DIM;
+  float TAU = params.TAU;
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
@@ -259,8 +290,10 @@ void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pr
     bulkPressure[is] = (-1.0/3.0) * (a - energyDensity[is]) - pressure[is];
   }
 }
-void calculateShearViscTensor(float **stressTensor, float *energyDensity, float **flowVelocity, float *pressure, float *bulkPressure, float **shearTensor)
+void calculateShearViscTensor(float **stressTensor, float *energyDensity, float **flowVelocity, float *pressure, float *bulkPressure, float **shearTensor, parameters params)
 {
+  int DIM = params.DIM;
+  float TAU = params.TAU;
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
@@ -282,8 +315,10 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
 }
 
 // n_B = u^(mu)j_(mu)
-void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float **flowVelocity)
+void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float **flowVelocity, parameters params)
 {
+  int DIM = params.DIM;
+  float TAU = params.TAU;
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
@@ -291,8 +326,9 @@ void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float *
   }
 }
 // V^(mu) = j^(mu) - n_B * u^(mu)
-void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, float *baryonDensity, float **flowVelocity)
+void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, float *baryonDensity, float **flowVelocity, parameters params)
 {
+  int DIM = params.DIM;
   for (int ivar = 0; ivar < 4; ivar++)
   {
     #pragma omp parallel for simd

@@ -1,3 +1,4 @@
+#pragma once
 float ** calloc2dArray(float **array, int dim1, int dim2)
 {
   array = (float **)calloc(dim1, sizeof(float *));
