@@ -129,11 +129,18 @@ int main(void)
   //perform the free streaming time-update step and free up memory
   //pretabulate trig and hypertrig functions before this step to save time?
   printf("performing the free streaming\n");
+  //copy initial and shifted density arrays to GPU
+  //#pragma acc data copy(density[:params.DIM][:params.DIM_RAP]), copy(shiftedDensity[:params.DIM][:params.DIM_RAP][:params.DIM_PHIP]) //copy energy density arrays
+  //#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays 
+
   double sec;
   sec = omp_get_wtime();
   freeStream(density, shiftedDensity, params);
+
+  //#pragma acc update host(shiftedDensity)
   free2dArray(density, params.DIM);
   if (params.BARYON) freeStream(chargeDensity, shiftedChargeDensity, params);
+  //#if(params.BARYON) pragma acc update host(shiftedChargeDensity)
   if (params.BARYON) free2dArray(chargeDensity, params.DIM);
 
   sec = omp_get_wtime() - sec;

@@ -1,7 +1,10 @@
 #pragma once
 #include <math.h>
 #include "Parameter.h"
+#include <accelmath.h>
 #define PI 3.141592654f
+
+//#pragma acc routine //build a copy of function to run on device 
 void freeStream(float **density, float ***shiftedDensity, parameters params)
 {
   int DIM_X = params.DIM_X;
@@ -22,7 +25,8 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
-  #pragma omp parallel for simd
+  #pragma omp parallel for
+  //#pragma acc parallel loop 
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -32,7 +36,6 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
     float x = (float)ix * DX  + xmin;
     float y = (float)iy * DY  + ymin;
     float eta = (float)ieta * DETA  + etamin;
-
     for (int irap = 0; irap < DIM_RAP; irap++)
     {
       float rap = (float)irap * DRAP + rapmin;

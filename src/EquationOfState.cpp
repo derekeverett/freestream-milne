@@ -7,7 +7,7 @@ void calculatePressure(float *energyDensity, float *baryonDensity, float *pressu
   //conformal eqn of state
   if (EOS_TYPE == 1)
   {
-    #pragma omp parallel for simd
+    #pragma omp parallel for 
     for (int is = 0; is < DIM; is++)
     {
       pressure[is] = energyDensity[is] / 3.0;
@@ -44,7 +44,7 @@ void calculatePressure(float *energyDensity, float *baryonDensity, float *pressu
     float b11 = 5.928138360995685e-11;
     float b12 = 3.2581066229887368e-18;
 
-    #pragma omp parallel for simd
+    #pragma omp parallel for 
     for (int is = 0; is < DIM; is++)
     {
       float e = energyDensity[is];
@@ -68,7 +68,7 @@ void calculatePressure(float *energyDensity, float *baryonDensity, float *pressu
   //import lattice qcd tables for finite baryon density and interpolate
   else if (EOS_TYPE == 3)
   {
-    #pragma omp parallel for simd
+    #pragma omp parallel for 
     for (int is = 0; is < DIM; is++)
     {
       pressure[is] = 0.0; //fix this! just a placeholder for an interpolation of tables
