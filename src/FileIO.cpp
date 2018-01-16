@@ -218,3 +218,9 @@ void readInParameters(struct parameters &params)
 
   fclose(fileIn);
 }
+/*
+void readEoSTable()
+{
+
+}
+*/

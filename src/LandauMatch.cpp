@@ -65,7 +65,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 
   for (int ivar = 0; ivar < 10; ivar++)
   {
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       int ix = is / (DIM_Y * DIM_ETA);
@@ -78,6 +78,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
+          //#pragma omp simd (+:stressTensor_tmp)
           stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
         }
       }
@@ -100,7 +101,7 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
 
   for (int ivar = 0; ivar < 4; ivar++)
   {
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       int ix = is / (DIM_Y * DIM_ETA);
@@ -128,7 +129,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
   float tolerance = 1.0e18; //set quantities to zero which are less than 10^(-18) if REGULATE is true
 
-  #pragma omp parallel for 
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
@@ -189,7 +190,6 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
 
-      //this is the code that Jia Liu uses. Why does it work for him?
       if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
       {
         gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
@@ -197,17 +197,15 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         gsl_complex v2 = gsl_matrix_complex_get(eigen_vectors, 2 , i);
         gsl_complex v3 = gsl_matrix_complex_get(eigen_vectors, 3 , i);
 
-        if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0)-1) > 0) //choose eigenvector
+        if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
         {
-          //why does he use this as a scaling factor???
-          //double factor = sqrt(1.0 / (3.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1));
-          //I think we should scale by minkowski length to get u^(mu)u_(mu) = 1
+          
           double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + TAU*TAU*GSL_REAL(v3)*GSL_REAL(v3));
           double factor = 1.0 / sqrt(minkowskiLength);
 
           if (GSL_REAL(v0) < 0) factor=-factor;
 
-          energyDensity[is] = GSL_REAL(eigenvalue) / abs(factor);
+          energyDensity[is] = GSL_REAL(eigenvalue);
           flowVelocity[0][is] = GSL_REAL(v0) * factor;
           flowVelocity[1][is] = GSL_REAL(v1) * factor;
           flowVelocity[2][is] = GSL_REAL(v2) * factor;
@@ -281,7 +279,7 @@ void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pr
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for 
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
@@ -294,7 +292,7 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for 
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
@@ -319,7 +317,7 @@ void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float *
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for 
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     baryonDensity[is] = (flowVelocity[0][is] * baryonCurrent[0][is]) - (flowVelocity[1][is] * baryonCurrent[1][is]) - (flowVelocity[2][is] * baryonCurrent[2][is]) - (TAU * TAU * flowVelocity[3][is] * baryonCurrent[3][is]);
@@ -331,7 +329,7 @@ void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, fl
   int DIM = params.DIM;
   for (int ivar = 0; ivar < 4; ivar++)
   {
-    #pragma omp parallel for 
+    #pragma omp parallel for
     for (int is = 0; is < DIM; is++)
     {
       baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);

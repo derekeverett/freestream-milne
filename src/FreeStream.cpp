@@ -1,7 +1,11 @@
 #pragma once
 #include <math.h>
 #include "Parameter.h"
+
+#ifdef _OPENACC
 #include <accelmath.h>
+#endif
+
 #define PI 3.141592654f
 
 //#pragma acc routine //build a copy of function to run on device 
@@ -26,7 +30,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
   #pragma omp parallel for
-  //#pragma acc parallel loop 
+  #pragma acc parallel loop 
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);

@@ -31,10 +31,17 @@ int main(void)
   printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", params.DX, params.DY, params.DETA, params.DTAU);
   if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
   else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
-  else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched \n");
+  else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
 
   //allocate and initialize memory
   printf("Allocating memory\n");
+  /*
+  float ***eqnOfStateTable;
+  if(params.EOS_TYPE == 3)
+  { //table is regularly spaced in mu_B and T, with 450 values each
+    eqnOfStateTable = calloc2dArray(eqnOfStateTable, 450, 450);
+  }
+  */
   //the initial energy density spatial profile
   float *initialEnergyDensity;
   initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
@@ -55,12 +62,12 @@ int main(void)
   printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 1.0, 1.0, 1.0, params);
+    initializeEllipticalGauss(initialEnergyDensity, 2.0, 3.0, 1.0, params);
     printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
   {
-    initializeEllipticalMCGauss(initialEnergyDensity, 1.0, 1.0, 1.0, params);
+    initializeEllipticalMCGauss(initialEnergyDensity, 2.0, 3.0, 1.0, params);
     printf("Fluctuating Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 3)
@@ -71,7 +78,7 @@ int main(void)
   else if (params.IC_ENERGY == 4)
   {
     readEnergyDensitySuperMCBlock(initialEnergyDensity, params);
-    printf("Reading from energy density file in initial_profiles/ \n");
+    printf("Reading from superMC energy density file in initial_profiles/ \n");
   }
   else
   {
@@ -85,12 +92,12 @@ int main(void)
     printf("setting initial conditions on baryon density : ");
     if (params.IC_BARYON == 1)
     {
-      initializeEllipticalGauss(initialChargeDensity, 1.0, 1.0, 1.0, params);
+      initializeEllipticalGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
       printf("Smooth Oblate Gaussian \n");
     }
     else if (params.IC_BARYON == 2)
     {
-      initializeEllipticalMCGauss(initialChargeDensity, 1.0, 1.0, 1.0, params);
+      initializeEllipticalMCGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
       printf("Fluctuating Oblate Gaussian \n");
     }
     else if (params.IC_BARYON == 3)
@@ -131,7 +138,7 @@ int main(void)
   printf("performing the free streaming\n");
   //copy initial and shifted density arrays to GPU
   //#pragma acc data copy(density[:params.DIM][:params.DIM_RAP]), copy(shiftedDensity[:params.DIM][:params.DIM_RAP][:params.DIM_PHIP]) //copy energy density arrays
-  //#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays 
+  //#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays
 
   double sec;
   sec = omp_get_wtime();
@@ -245,28 +252,41 @@ int main(void)
   writeScalarToFile(pressure, "p", params);
   writeScalarToFile(bulkPressure, "bulk_PI", params);
   writeScalarToFileProjection(energyDensity, "e_projection", params);
+  writeScalarToFileProjection(pressure, "p_projection", params);
+  writeScalarToFileProjection(bulkPressure, "bulk_PI_projection", params);
 
   writeVectorToFile(flowVelocity, "u_tau", 0, params);
   writeVectorToFile(flowVelocity, "u_x", 1, params);
   writeVectorToFile(flowVelocity, "u_y", 2,params);
   writeVectorToFile(flowVelocity, "u_eta", 3,params);
 
+  writeVectorToFileProjection(flowVelocity, "u_tau_projection", 0,params);
   writeVectorToFileProjection(flowVelocity, "u_x_projection", 1,params);
   writeVectorToFileProjection(flowVelocity, "u_y_projection", 2,params);
   writeVectorToFileProjection(flowVelocity, "u_eta_projection", 3,params);
 
-  /*
-  writeVectorToFile(shearTensor, "pi_tau_tau", 0);
-  writeVectorToFile(shearTensor, "pi_tau_x", 1);
-  writeVectorToFile(shearTensor, "pi_tau_y", 2);
-  writeVectorToFile(shearTensor, "pi_tau_eta", 3);
-  writeVectorToFile(shearTensor, "pi_x_x", 4);
-  writeVectorToFile(shearTensor, "pi_x_y", 5);
-  writeVectorToFile(shearTensor, "pi_x_eta", 6);
-  writeVectorToFile(shearTensor, "pi_y_y", 7);
-  writeVectorToFile(shearTensor, "pi_y_eta", 8);
-  writeVectorToFile(shearTensor, "pi_eta_eta", 9);
-  */
+  
+  writeVectorToFile(shearTensor, "pi_tau_tau", 0,params);
+  writeVectorToFile(shearTensor, "pi_tau_x", 1,params);
+  writeVectorToFile(shearTensor, "pi_tau_y", 2,params);
+  writeVectorToFile(shearTensor, "pi_tau_eta", 3,params);
+  writeVectorToFile(shearTensor, "pi_x_x", 4,params);
+  writeVectorToFile(shearTensor, "pi_x_y", 5,params);
+  writeVectorToFile(shearTensor, "pi_x_eta", 6,params);
+  writeVectorToFile(shearTensor, "pi_y_y", 7,params);
+  writeVectorToFile(shearTensor, "pi_y_eta", 8,params);
+  writeVectorToFile(shearTensor, "pi_eta_eta", 9,params);
+
+  writeVectorToFileProjection(shearTensor, "pi_tau_tau_projection", 0,params);
+  writeVectorToFileProjection(shearTensor, "pi_tau_x_projection", 1,params);
+  writeVectorToFileProjection(shearTensor, "pi_tau_y_projection", 2,params);
+  writeVectorToFileProjection(shearTensor, "pi_tau_eta_projection", 3,params);
+  writeVectorToFileProjection(shearTensor, "pi_x_x_projection", 4,params);
+  writeVectorToFileProjection(shearTensor, "pi_x_y_projection", 5,params);
+  writeVectorToFileProjection(shearTensor, "pi_x_eta_projection", 6,params);
+  writeVectorToFileProjection(shearTensor, "pi_y_y_projection", 7,params);
+  writeVectorToFileProjection(shearTensor, "pi_y_eta_projection", 8,params);
+  writeVectorToFileProjection(shearTensor, "pi_eta_eta_projection", 9,params);
 
   if (params.BARYON)
   {

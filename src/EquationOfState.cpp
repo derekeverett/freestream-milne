@@ -14,6 +14,7 @@ void calculatePressure(float *energyDensity, float *baryonDensity, float *pressu
     }
   }
   //parameterization from Wuppertal-Budapest collaboration, taken from cpu-vh/.../EquationOfState.cpp
+  //requires zero baryon density 
   else if (EOS_TYPE == 2)
   {
     float a0 = -0.25181736420168666;
