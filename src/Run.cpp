@@ -10,7 +10,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #define PI 3.141592654f
 
@@ -141,7 +144,9 @@ int main(void)
   //#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays
 
   double sec;
+  #ifdef _OPENMP
   sec = omp_get_wtime();
+  #endif
   freeStream(density, shiftedDensity, params);
 
   //#pragma acc update host(shiftedDensity)
@@ -150,7 +155,9 @@ int main(void)
   //#if(params.BARYON) pragma acc update host(shiftedChargeDensity)
   if (params.BARYON) free2dArray(chargeDensity, params.DIM);
 
+  #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
+  #endif
   printf("Free streaming took %f seconds\n", sec);
 
   //Landau matching to find the components of energy-momentum tensor
@@ -169,27 +176,39 @@ int main(void)
   hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
   printf("calculating hypertrig table\n");
+  #ifdef _OPENMP
   sec = omp_get_wtime();
+  #endif
   calculateHypertrigTable(hypertrigTable, params);
+  #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
+  #endif
   printf("calculating trig table took %f seconds\n", sec);
 
   //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
   printf("calculating independent components of stress tensor\n");
+  #ifdef _OPENMP
   sec = omp_get_wtime();
+  #endif
   calculateStressTensor(stressTensor, shiftedDensity, hypertrigTable, params);
   free3dArray(shiftedDensity, params.DIM, params.DIM_RAP);
+  #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
+  #endif
   printf("calculating stress tensor took %f seconds\n", sec);
 
   if (params.BARYON)
   {
     //calculate the four independent components of the baryon current by integrating over rapidity and phi_p
     printf("calculating independent components of baryon current\n");
+    #ifdef _OPENMP
     sec = omp_get_wtime();
+    #endif
     calculateBaryonCurrent(baryonCurrent, shiftedChargeDensity, hypertrigTable, params);
     free3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP);
+    #ifdef _OPENMP
     sec = omp_get_wtime() - sec;
+    #endif
     printf("calculating baryon current took %f seconds\n", sec);
   }
 
@@ -227,19 +246,27 @@ int main(void)
 
   //solve the eigenvalue problem for the energy density and flow velocity
   printf("solving eigenvalue problem for energy density and flow velocity\n");
+  #ifdef _OPENMP
   sec = omp_get_wtime();
+  #endif
   solveEigenSystem(stressTensor, energyDensity, flowVelocity, params);
+  #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
+  #endif
   printf("solving eigenvalue problem took %f seconds\n", sec);
 
   if (params.BARYON)
   {
     //calculate baryon density and diffusion current
     printf("calculating baryon density and diffusion current \n");
+    #ifdef _OPENMP
     sec = omp_get_wtime();
+    #endif
     calculateBaryonDensity(baryonDensity, baryonCurrent, flowVelocity, params);
     calculateBaryonDiffusion(baryonDiffusion, baryonCurrent, baryonDensity, flowVelocity, params);
+    #ifdef _OPENMP
     sec = omp_get_wtime() - sec;
+    #endif
     printf("calculating baryon density and diffusion current took %f seconds\n", sec);
   }
 
