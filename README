@@ -14,7 +14,7 @@ openacc (GPU) acceleration is under development, and is not yet functional
 
 SETTING PARAMETERS
 
-Parameters and options can be set in parameters.dat, which is read in at run time.
+Parameters and options can be set in freestream_input, which is read in at run time.
 They are described below
 BARYON (int) 0 : freestream the energy density, 1 : freestream the baryon density and energy density
 IC_ENERGY (int) 1 : Smooth Gaussian, 2 : MC Guassian, 3: read tab delimited file for energy density, 4 : read superMC block format
