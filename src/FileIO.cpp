@@ -169,7 +169,7 @@ void readInParameters(struct parameters &params)
 
   FILE *fileIn;
   std::stringstream paramsStream;
-  paramsStream << "parameters.dat";
+  paramsStream << "freestream_input";
   fileIn = fopen(paramsStream.str().c_str(),"r");
 
   if (fileIn == NULL)
