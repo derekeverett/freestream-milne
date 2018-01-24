@@ -16,10 +16,11 @@
 #endif
 
 #define PI 3.141592654f
+#define PRINT_SCREEN 0 //turn on for program info to print to terminal 
 
 int main(void)
 {
-  printf("Welcome to freestream-milne\n");
+  if(PRINT_SCREEN) printf("Welcome to freestream-milne\n");
 
   //declare parameter struct
   struct parameters params;
@@ -29,15 +30,17 @@ int main(void)
   params.DIM = params.DIM_X * params.DIM_Y * params.DIM_ETA;
   params.TAU = params.TAU0 + params.DTAU;
 
-  printf("Parameters are ...\n");
-  printf("(DIM_X, DIM_Y, DIM_ETA) = (%d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA);
-  printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", params.DX, params.DY, params.DETA, params.DTAU);
-  if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
-  else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
-  else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
-
+  if(PRINT_SCREEN)
+    {
+      printf("Parameters are ...\n");
+      printf("(DIM_X, DIM_Y, DIM_ETA) = (%d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA);
+      printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", params.DX, params.DY, params.DETA, params.DTAU);
+      if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
+      else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
+      else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
+    }
   //allocate and initialize memory
-  printf("Allocating memory\n");
+  if (PRINT_SCREEN) printf("Allocating memory\n");
   /*
   float ***eqnOfStateTable;
   if(params.EOS_TYPE == 3)
@@ -46,42 +49,42 @@ int main(void)
   }
   */
   //the initial energy density spatial profile
-  float *initialEnergyDensity;
+  float *initialEnergyDensity = NULL;
   initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
 
   //the initial baryon density spatial profile
-  float *initialChargeDensity;
+  float *initialChargeDensity = NULL;
   if(params.BARYON) initialChargeDensity = (float *)calloc(params.DIM, sizeof(float));
 
   //the initial density G(tilde)^(tau,tau) at time tau_0
-  float **density;
+  float **density = NULL;
   density = calloc2dArray(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //the initial density J(tilde)^(tau) at time tau_0
-  float **chargeDensity;
+  float **chargeDensity = NULL;
   if(params.BARYON) chargeDensity = calloc2dArray(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //initialize energy density
-  printf("setting initial conditions on energy density : ");
+  if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 2.0, 3.0, 1.0, params);
-    printf("Smooth Oblate Gaussian \n");
+    initializeEllipticalGauss(initialEnergyDensity, 2.0, 2.0, 2.0, params);
+    if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
   {
     initializeEllipticalMCGauss(initialEnergyDensity, 2.0, 3.0, 1.0, params);
-    printf("Fluctuating Oblate Gaussian \n");
+    if(PRINT_SCREEN) printf("Fluctuating Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 3)
   {
     readDensityFile(initialEnergyDensity, "initial_profiles/e", params);
-    printf("Reading from energy density file in initial_profiles/ \n");
+    if(PRINT_SCREEN) printf("Reading from energy density file in initial_profiles/ \n");
   }
   else if (params.IC_ENERGY == 4)
   {
     readEnergyDensitySuperMCBlock(initialEnergyDensity, params);
-    printf("Reading from superMC energy density file in initial_profiles/ \n");
+    if(PRINT_SCREEN) printf("Reading from superMC energy density file in initial_profiles/ \n");
   }
   else
   {
@@ -92,21 +95,21 @@ int main(void)
   if (params.BARYON)
   {
     //initialize baryon density
-    printf("setting initial conditions on baryon density : ");
+    if (PRINT_SCREEN) printf("setting initial conditions on baryon density : ");
     if (params.IC_BARYON == 1)
     {
       initializeEllipticalGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
-      printf("Smooth Oblate Gaussian \n");
+      if (PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
     }
     else if (params.IC_BARYON == 2)
     {
       initializeEllipticalMCGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
-      printf("Fluctuating Oblate Gaussian \n");
+      if (PRINT_SCREEN) printf("Fluctuating Oblate Gaussian \n");
     }
     else if (params.IC_BARYON == 3)
     {
       readDensityFile(initialChargeDensity, "initial_profiles/nB", params);
-      printf("Reading from baryon density file in initial_profiles/ \n");
+      if (PRINT_SCREEN) printf("Reading from baryon density file in initial_profiles/ \n");
     }
     else
     {
@@ -116,10 +119,12 @@ int main(void)
   }
 
   //write initial energy density and baryon density to file
+  /*
   writeScalarToFile(initialEnergyDensity, "initial_e", params);
   if (params.BARYON) writeScalarToFile(initialChargeDensity, "initial_nB", params);
   writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection", params);
   if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, "initial_nB_projection", params);
+  */
 
   //convert the energy density profile into the initial density profile to be streamed and free memory
   convertInitialDensity(initialEnergyDensity, density, params);
@@ -129,21 +134,21 @@ int main(void)
   if (params.BARYON) free(initialChargeDensity);
 
   //the shifted energy density profile G^(tau,tau) at time tau
-  float ***shiftedDensity;
+  float ***shiftedDensity = NULL;
   shiftedDensity = calloc3dArray(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //the shifted baryon density profile J^(tau) at time tau
-  float ***shiftedChargeDensity;
+  float ***shiftedChargeDensity = NULL;
   if(params.BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //perform the free streaming time-update step and free up memory
   //pretabulate trig and hypertrig functions before this step to save time?
-  printf("performing the free streaming\n");
+  if (PRINT_SCREEN) printf("performing the free streaming\n");
   //copy initial and shifted density arrays to GPU
   //#pragma acc data copy(density[:params.DIM][:params.DIM_RAP]), copy(shiftedDensity[:params.DIM][:params.DIM_RAP][:params.DIM_PHIP]) //copy energy density arrays
   //#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays
 
-  double sec;
+  double sec = 0.0;
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -158,24 +163,24 @@ int main(void)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  printf("Free streaming took %f seconds\n", sec);
+  if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
 
   //Landau matching to find the components of energy-momentum tensor
-  printf("Landau matching to find hydrodynamic variables\n");
+  if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
 
   //the ten independent components of the stress tensor
-  float **stressTensor;
+  float **stressTensor = NULL;
   stressTensor = calloc2dArray(stressTensor, 10, params.DIM);
 
   //the four independent components of baryon current four-vector
-  float **baryonCurrent;
+  float **baryonCurrent = NULL;
   if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
 
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
-  float ****hypertrigTable;
+  float ****hypertrigTable = NULL;
   hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
-  printf("calculating hypertrig table\n");
+  if (PRINT_SCREEN) printf("calculating hypertrig table\n");
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -183,10 +188,10 @@ int main(void)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  printf("calculating trig table took %f seconds\n", sec);
+  if (PRINT_SCREEN) printf("calculating trig table took %f seconds\n", sec);
 
   //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
-  printf("calculating independent components of stress tensor\n");
+  if (PRINT_SCREEN) printf("calculating independent components of stress tensor\n");
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -195,12 +200,12 @@ int main(void)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  printf("calculating stress tensor took %f seconds\n", sec);
+  if (PRINT_SCREEN) printf("calculating stress tensor took %f seconds\n", sec);
 
   if (params.BARYON)
   {
     //calculate the four independent components of the baryon current by integrating over rapidity and phi_p
-    printf("calculating independent components of baryon current\n");
+    if (PRINT_SCREEN) printf("calculating independent components of baryon current\n");
     #ifdef _OPENMP
     sec = omp_get_wtime();
     #endif
@@ -209,7 +214,7 @@ int main(void)
     #ifdef _OPENMP
     sec = omp_get_wtime() - sec;
     #endif
-    printf("calculating baryon current took %f seconds\n", sec);
+    if (PRINT_SCREEN) printf("calculating baryon current took %f seconds\n", sec);
   }
 
   //done with hypertrig table as well
@@ -217,35 +222,35 @@ int main(void)
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
-  float *energyDensity;
+  float *energyDensity = NULL;
   energyDensity = (float *)calloc(params.DIM, sizeof(float));
 
   //the baryon density
-  float *baryonDensity;
+  float *baryonDensity = NULL;
   if(params.BARYON) baryonDensity = (float *)calloc(params.DIM, sizeof(float));
 
   //the flow velocity
-  float **flowVelocity;
+  float **flowVelocity = NULL;
   flowVelocity = calloc2dArray(flowVelocity, 4, params.DIM);
 
   //the pressure
-  float *pressure;
+  float *pressure = NULL;
   pressure = (float *)calloc(params.DIM, sizeof(float));
 
   //the bulk pressure Pi
-  float *bulkPressure;
+  float *bulkPressure = NULL;
   bulkPressure = (float *)calloc(params.DIM, sizeof(float));
 
   //the shear stress tensor
-  float **shearTensor;
+  float **shearTensor = NULL;
   shearTensor = calloc2dArray(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
 
   //the baryon diffusion current vector
-  float **baryonDiffusion;
+  float **baryonDiffusion = NULL;
   if(params.BARYON) baryonDiffusion = calloc2dArray(baryonDiffusion, 4, params.DIM);
 
   //solve the eigenvalue problem for the energy density and flow velocity
-  printf("solving eigenvalue problem for energy density and flow velocity\n");
+  if (PRINT_SCREEN) printf("solving eigenvalue problem for energy density and flow velocity\n");
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -253,12 +258,12 @@ int main(void)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  printf("solving eigenvalue problem took %f seconds\n", sec);
+  if (PRINT_SCREEN) printf("solving eigenvalue problem took %f seconds\n", sec);
 
   if (params.BARYON)
   {
     //calculate baryon density and diffusion current
-    printf("calculating baryon density and diffusion current \n");
+    if (PRINT_SCREEN) printf("calculating baryon density and diffusion current \n");
     #ifdef _OPENMP
     sec = omp_get_wtime();
     #endif
@@ -267,14 +272,16 @@ int main(void)
     #ifdef _OPENMP
     sec = omp_get_wtime() - sec;
     #endif
-    printf("calculating baryon density and diffusion current took %f seconds\n", sec);
+    if (PRINT_SCREEN) printf("calculating baryon density and diffusion current took %f seconds\n", sec);
   }
 
   calculatePressure(energyDensity, baryonDensity, pressure, params);
   calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
   calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
 
-  printf("writing hydro variables to file\n");
+  if (PRINT_SCREEN) printf("writing hydro variables to file\n");
+
+  /*
   writeScalarToFile(energyDensity, "e", params);
   writeScalarToFile(pressure, "p", params);
   writeScalarToFile(bulkPressure, "bulk_PI", params);
@@ -323,6 +330,7 @@ int main(void)
     writeVectorToFile(baryonDiffusion, "V_y", 2,params);
     writeVectorToFile(baryonDiffusion, "V_eta", 3,params);
   }
+  */
 
   //free the memory
   free2dArray(stressTensor, 10);
@@ -339,5 +347,5 @@ int main(void)
     free2dArray(baryonDiffusion, 4);
   }
 
-  printf("Done... Goodbye!\n");
+  if (PRINT_SCREEN) printf("Done... Goodbye!\n");
 }
