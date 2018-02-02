@@ -35,3 +35,5 @@ DRAP (float) lattice spacing in rapidity (differential)
 DTAU (float) free streaming proper time interval
 TAU0 (float) start of free streaming proper time
 EOS_TYPE (int) 1 : conformal EoS, 2 : Wuppertal-Bhudapest Parameterization, 3 : Lattice EoS with nonzero baryon density
+
+Alternatively, one can use the wrapper class defined in src/wrappers to run the code. See wrapperTest.cpp. 
