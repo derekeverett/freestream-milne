@@ -176,47 +176,51 @@ void readInParameters(struct parameters &params)
   {
     printf("Couldn't open parameters.dat . Using default values!\n");
   }
+  
+  else
+  {
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.BARYON = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.IC_ENERGY = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.IC_BARYON = dummyInt;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.ETA_WIDTH = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.ETA_FLAT = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.SIGMA = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.SIGMA_B = dummyFloat;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.DIM_X = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.DIM_Y = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.DIM_ETA = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.DIM_RAP = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.DIM_PHIP = dummyInt;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.DX = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.DY = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.DETA = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.DRAP = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.DTAU = dummyFloat;
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.TAU0 = dummyFloat;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.EOS_TYPE = dummyInt;
 
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.BARYON = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.IC_ENERGY = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.IC_BARYON = dummyInt;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.ETA_WIDTH = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.ETA_FLAT = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.SIGMA = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.SIGMA_B = dummyFloat;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.DIM_X = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.DIM_Y = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.DIM_ETA = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.DIM_RAP = dummyInt;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.DIM_PHIP = dummyInt;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.DX = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.DY = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.DETA = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.DRAP = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.DTAU = dummyFloat;
-  fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
-  params.TAU0 = dummyFloat;
-  fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
-  params.EOS_TYPE = dummyInt;
+    fclose(fileIn);
+  }
 
-  fclose(fileIn);
 }
 /*
 void readEoSTable()

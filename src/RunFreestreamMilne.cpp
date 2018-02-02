@@ -16,7 +16,7 @@
 #endif
 
 #define PI 3.141592654f
-#define PRINT_SCREEN 0 //turn on for program info to print to terminal 
+#define PRINT_SCREEN 0 //turn on for program info to print to terminal
 
 int main(void)
 {
@@ -24,8 +24,31 @@ int main(void)
 
   //declare parameter struct
   struct parameters params;
-  //read in chosen parameters from parameters.dat.
+
+  //set default parameters in case of missing freestream_input file
+  params.BARYON = 0;
+  params.IC_ENERGY = 1;
+  params.IC_BARYON = 1;
+  params.ETA_WIDTH = 0.5;
+  params.ETA_FLAT = 0.5;
+  params.SIGMA = 1.0;
+  params.SIGMA_B = 1.0;
+  params.DIM_X = 101;
+  params.DIM_Y = 101;
+  params.DIM_ETA = 1;
+  params.DIM_RAP = 1;
+  params.DIM_PHIP = 51;
+  params.DX = 0.1;
+  params.DY = 0.1;
+  params.DETA = 0.1;
+  params.DRAP = 0.2;
+  params.DTAU = 0.5;
+  params.TAU0 = 0.1;
+  params.EOS_TYPE = 1;
+
+  //read in chosen parameters from freestream_input if such a file exists
   readInParameters(params);
+
   //define some useful combinations
   params.DIM = params.DIM_X * params.DIM_Y * params.DIM_ETA;
   params.TAU = params.TAU0 + params.DTAU;
@@ -304,7 +327,7 @@ int main(void)
   writeVectorToFileProjection(flowVelocity, "u_y_projection", 2,params);
   writeVectorToFileProjection(flowVelocity, "u_eta_projection", 3,params);
 
-  
+
   writeVectorToFile(shearTensor, "pi_tau_tau", 0,params);
   writeVectorToFile(shearTensor, "pi_tau_x", 1,params);
   writeVectorToFile(shearTensor, "pi_tau_y", 2,params);
