@@ -49,7 +49,11 @@ FREESTREAMMILNE::~FREESTREAMMILNE() {
 
 //use this function to initialize energy density within JETSCAPE?
 void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
+  //perform a pointer copy - this causes a seg fault when destructor is called
   init_energy_density = energy_density_in;
+
+  //perform copy value by value
+  //for (int i = 0; i < energy_density_in.size(); i++) init_energy_density[i] = energy_density_in[i];
 }
 
 //where the magic happens
@@ -149,7 +153,10 @@ else if (params.IC_ENERGY == 5)
   //read in initial energy density using the initiliaze_from_vector() function
   //note that this is not safe - if one passes an empty vector it will not throw an error
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
-  initialEnergyDensity = &init_energy_density[0];
+  //do a pointer copy - this throws a seg fault when destructor is called
+  //initialEnergyDensity = &init_energy_density[0];
+  //do a value copy
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
 else
 {
@@ -184,12 +191,12 @@ if (params.BARYON)
 }
 
 //write initial energy density and baryon density to file
-/*
+
 writeScalarToFile(initialEnergyDensity, "initial_e", params);
 if (params.BARYON) writeScalarToFile(initialChargeDensity, "initial_nB", params);
 writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection", params);
 if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, "initial_nB_projection", params);
-*/
+
 
 //convert the energy density profile into the initial density profile to be streamed and free memory
 convertInitialDensity(initialEnergyDensity, density, params);
@@ -346,11 +353,17 @@ calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bu
 
 if (PRINT_SCREEN) printf("writing hydro variables to file\n");
 
-/*
+
 writeScalarToFile(energyDensity, "e", params);
+
+/*
 writeScalarToFile(pressure, "p", params);
 writeScalarToFile(bulkPressure, "bulk_PI", params);
+
+*/
 writeScalarToFileProjection(energyDensity, "e_projection", params);
+
+/*
 writeScalarToFileProjection(pressure, "p_projection", params);
 writeScalarToFileProjection(bulkPressure, "bulk_PI_projection", params);
 
