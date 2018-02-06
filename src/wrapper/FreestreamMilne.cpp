@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <vector>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -31,12 +33,23 @@ class FREESTREAMMILNE {
     ~FREESTREAMMILNE();
 
     int run_freestream_milne();
+
+    void initialize_from_vector(std::vector<float>);
+
+    //support to initilialize the energy density from a vector - for JETSCAPE
+    std::vector<float> init_energy_density;
 };
 
 FREESTREAMMILNE::FREESTREAMMILNE() {
 }
 
 FREESTREAMMILNE::~FREESTREAMMILNE() {
+}
+
+
+//use this function to initialize energy density within JETSCAPE?
+void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
+  init_energy_density = energy_density_in;
 }
 
 //where the magic happens
@@ -49,7 +62,7 @@ struct parameters params;
 
 //set default parameters in case of missing freestream_input file
 params.BARYON = 0;
-params.IC_ENERGY = 1;
+params.IC_ENERGY = 5;
 params.IC_BARYON = 1;
 params.ETA_WIDTH = 0.5;
 params.ETA_FLAT = 0.5;
@@ -133,8 +146,10 @@ else if (params.IC_ENERGY == 4)
 }
 else if (params.IC_ENERGY == 5)
 {
-  //read in initial energy density within JETSCAPE framework
-  if(PRINT_SCREEN) printf("Reading energy density from JETSCAPE pointer\n");
+  //read in initial energy density using the initiliaze_from_vector() function
+  //note that this is not safe - if one passes an empty vector it will not throw an error
+  if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
+  initialEnergyDensity = &init_energy_density[0];
 }
 else
 {
