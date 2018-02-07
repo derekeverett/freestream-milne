@@ -1,6 +1,7 @@
 #pragma once
 struct parameters
 {
+  int OUTPUTFORMAT;
   int BARYON;
   int IC_ENERGY;
   int IC_BARYON;

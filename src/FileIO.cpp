@@ -176,9 +176,11 @@ void readInParameters(struct parameters &params)
   {
     printf("Couldn't open parameters.dat . Using default values!\n");
   }
-  
+
   else
   {
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.OUTPUTFORMAT = dummyInt;
     fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
     params.BARYON = dummyInt;
     fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);

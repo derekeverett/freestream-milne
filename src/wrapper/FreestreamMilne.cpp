@@ -34,26 +34,37 @@ class FREESTREAMMILNE {
 
     int run_freestream_milne();
 
-    void initialize_from_vector(std::vector<float>);
+    // IS THIS VARIABLE NECESSARY
+    int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
-    //support to initilialize the energy density from a vector - for JETSCAPE
+    //support to initilialize the energy density from a vector - useful for JETSCAPE
+    void initialize_from_vector(std::vector<float>);
     std::vector<float> init_energy_density;
+
+    //support to write final hydro variables to vectors - useful for JETSCAPE
+    void output_to_vectors(std::vector<float>&, std::vector<float>&);
+    std::vector<float> final_energy_density;
+    std::vector<float> final_pressure;
+
 };
 
 FREESTREAMMILNE::FREESTREAMMILNE() {
+
 }
 
 FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
 
-//use this function to initialize energy density within JETSCAPE?
+//use this function to initialize energy density within JETSCAPE
 void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
-  //perform a pointer copy - this causes a seg fault when destructor is called
   init_energy_density = energy_density_in;
+}
 
-  //perform copy value by value
-  //for (int i = 0; i < energy_density_in.size(); i++) init_energy_density[i] = energy_density_in[i];
+//use this function to return final hydro variables as vectors within JETSCAPE
+void FREESTREAMMILNE::output_to_vectors(std::vector<float> &energy_density_out, std::vector<float> &pressure_out) {
+  energy_density_out = final_energy_density;
+  pressure_out = final_pressure;
 }
 
 //where the magic happens
@@ -65,6 +76,7 @@ if(PRINT_SCREEN) printf("Welcome to freestream-milne\n");
 struct parameters params;
 
 //set default parameters in case of missing freestream_input file
+params.OUTPUTFORMAT = 2;
 params.BARYON = 0;
 params.IC_ENERGY = 5;
 params.IC_BARYON = 1;
@@ -153,8 +165,6 @@ else if (params.IC_ENERGY == 5)
   //read in initial energy density using the initiliaze_from_vector() function
   //note that this is not safe - if one passes an empty vector it will not throw an error
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
-  //do a pointer copy - this throws a seg fault when destructor is called
-  //initialEnergyDensity = &init_energy_density[0];
   //do a value copy
   for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
@@ -351,7 +361,7 @@ calculatePressure(energyDensity, baryonDensity, pressure, params);
 calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
 calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
 
-if (PRINT_SCREEN) printf("writing hydro variables to file\n");
+if (PRINT_SCREEN) printf("writing hydro variables\n");
 
 
 writeScalarToFile(energyDensity, "e", params);
@@ -409,6 +419,20 @@ if (params.BARYON)
   writeVectorToFile(baryonDiffusion, "V_eta", 3,params);
 }
 */
+
+//support for JETSCAPE - write hydro variables to vectors
+final_energy_density.resize(params.DIM);
+final_pressure.resize(params.DIM);
+if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
+{
+  for (int i = 0; i < params.DIM; i++)
+  {
+    final_energy_density[i] = energyDensity[i];
+    final_pressure[i] = pressure[i];
+  }
+}
+
+
 
 //free the memory
 free2dArray(stressTensor, 10);
