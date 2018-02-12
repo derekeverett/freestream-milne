@@ -23,6 +23,9 @@ void initializeGauss(float *density, float b, parameters params) // b is the var
   float DX = params.DX;
   float DY = params.DY;
   float DETA = params.DETA;
+
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -34,7 +37,7 @@ void initializeGauss(float *density, float b, parameters params) // b is the var
     float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
     float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
+    density[is] = e0 * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
   }
 }
 
@@ -48,6 +51,8 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta, p
   float DY = params.DY;
   float DETA = params.DETA;
 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -59,7 +64,7 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta, p
     float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
     float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
+    density[is] = e0 * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
   }
 }
 
@@ -73,6 +78,8 @@ void initializeMCGauss(float * density, float b, parameters params)
   float DY = params.DY;
   float DETA = params.DETA;
 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -84,7 +91,7 @@ void initializeMCGauss(float * density, float b, parameters params)
     float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
     float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = ((float)rand() / RAND_MAX) * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
+    density[is] = e0 * ((float)rand() / RAND_MAX) * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
   }
 }
 
@@ -98,6 +105,8 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta,
   float DY = params.DY;
   float DETA = params.DETA;
 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -109,7 +118,7 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta,
     float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
     float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = ((float)rand() / RAND_MAX) * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
+    density[is] = e0 * ((float)rand() / RAND_MAX) * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
   }
 }
 

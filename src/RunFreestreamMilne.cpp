@@ -16,7 +16,7 @@
 #endif
 
 #define PI 3.141592654f
-#define PRINT_SCREEN 0 //turn on for program info to print to terminal
+#define PRINT_SCREEN 1 //turn on for program info to print to terminal
 
 int main(void)
 {
@@ -26,6 +26,7 @@ int main(void)
   struct parameters params;
 
   //set default parameters in case of missing freestream_input file
+  params.OUTPUTFORMAT = 1;
   params.BARYON = 0;
   params.IC_ENERGY = 1;
   params.IC_BARYON = 1;
@@ -91,7 +92,7 @@ int main(void)
   if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 2.0, 2.0, 2.0, params);
+    initializeEllipticalGauss(initialEnergyDensity, 7.0, 7.0, 5.0, params);
     if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
@@ -309,56 +310,56 @@ int main(void)
 
   if (PRINT_SCREEN) printf("writing hydro variables to file\n");
 
-  /*
+
   writeScalarToFile(energyDensity, "e", params);
   writeScalarToFile(pressure, "p", params);
-  writeScalarToFile(bulkPressure, "bulk_PI", params);
+  writeScalarToFile(bulkPressure, "bulk", params);
   writeScalarToFileProjection(energyDensity, "e_projection", params);
   writeScalarToFileProjection(pressure, "p_projection", params);
-  writeScalarToFileProjection(bulkPressure, "bulk_PI_projection", params);
+  writeScalarToFileProjection(bulkPressure, "bulk_projection", params);
 
-  writeVectorToFile(flowVelocity, "u_tau", 0, params);
-  writeVectorToFile(flowVelocity, "u_x", 1, params);
-  writeVectorToFile(flowVelocity, "u_y", 2,params);
-  writeVectorToFile(flowVelocity, "u_eta", 3,params);
+  writeVectorToFile(flowVelocity, "ut", 0, params);
+  writeVectorToFile(flowVelocity, "ux", 1, params);
+  writeVectorToFile(flowVelocity, "uy", 2, params);
+  writeVectorToFile(flowVelocity, "un", 3, params);
 
-  writeVectorToFileProjection(flowVelocity, "u_tau_projection", 0,params);
-  writeVectorToFileProjection(flowVelocity, "u_x_projection", 1,params);
-  writeVectorToFileProjection(flowVelocity, "u_y_projection", 2,params);
-  writeVectorToFileProjection(flowVelocity, "u_eta_projection", 3,params);
+  writeVectorToFileProjection(flowVelocity, "ut_projection", 0, params);
+  writeVectorToFileProjection(flowVelocity, "ux_projection", 1, params);
+  writeVectorToFileProjection(flowVelocity, "uy_projection", 2, params);
+  writeVectorToFileProjection(flowVelocity, "un_projection", 3, params);
 
 
-  writeVectorToFile(shearTensor, "pi_tau_tau", 0,params);
-  writeVectorToFile(shearTensor, "pi_tau_x", 1,params);
-  writeVectorToFile(shearTensor, "pi_tau_y", 2,params);
-  writeVectorToFile(shearTensor, "pi_tau_eta", 3,params);
-  writeVectorToFile(shearTensor, "pi_x_x", 4,params);
-  writeVectorToFile(shearTensor, "pi_x_y", 5,params);
-  writeVectorToFile(shearTensor, "pi_x_eta", 6,params);
-  writeVectorToFile(shearTensor, "pi_y_y", 7,params);
-  writeVectorToFile(shearTensor, "pi_y_eta", 8,params);
-  writeVectorToFile(shearTensor, "pi_eta_eta", 9,params);
+  writeVectorToFile(shearTensor, "pitt", 0, params);
+  writeVectorToFile(shearTensor, "pitx", 1, params);
+  writeVectorToFile(shearTensor, "pity", 2, params);
+  writeVectorToFile(shearTensor, "pitn", 3, params);
+  writeVectorToFile(shearTensor, "pixx", 4, params);
+  writeVectorToFile(shearTensor, "pixy", 5, params);
+  writeVectorToFile(shearTensor, "pixn", 6, params);
+  writeVectorToFile(shearTensor, "piyy", 7, params);
+  writeVectorToFile(shearTensor, "piyn", 8, params);
+  writeVectorToFile(shearTensor, "pinn", 9, params);
 
-  writeVectorToFileProjection(shearTensor, "pi_tau_tau_projection", 0,params);
-  writeVectorToFileProjection(shearTensor, "pi_tau_x_projection", 1,params);
-  writeVectorToFileProjection(shearTensor, "pi_tau_y_projection", 2,params);
-  writeVectorToFileProjection(shearTensor, "pi_tau_eta_projection", 3,params);
-  writeVectorToFileProjection(shearTensor, "pi_x_x_projection", 4,params);
-  writeVectorToFileProjection(shearTensor, "pi_x_y_projection", 5,params);
-  writeVectorToFileProjection(shearTensor, "pi_x_eta_projection", 6,params);
-  writeVectorToFileProjection(shearTensor, "pi_y_y_projection", 7,params);
-  writeVectorToFileProjection(shearTensor, "pi_y_eta_projection", 8,params);
-  writeVectorToFileProjection(shearTensor, "pi_eta_eta_projection", 9,params);
+  writeVectorToFileProjection(shearTensor, "pitt_projection", 0, params);
+  writeVectorToFileProjection(shearTensor, "pitx_projection", 1, params);
+  writeVectorToFileProjection(shearTensor, "pity_projection", 2, params);
+  writeVectorToFileProjection(shearTensor, "pitn_projection", 3, params);
+  writeVectorToFileProjection(shearTensor, "pixx_projection", 4, params);
+  writeVectorToFileProjection(shearTensor, "pixy_projection", 5, params);
+  writeVectorToFileProjection(shearTensor, "pixn_projection", 6, params);
+  writeVectorToFileProjection(shearTensor, "piyy_projection", 7, params);
+  writeVectorToFileProjection(shearTensor, "piyn_projection", 8, params);
+  writeVectorToFileProjection(shearTensor, "pinn_projection", 9, params);
 
   if (params.BARYON)
   {
-    writeScalarToFile(baryonDensity, "nB",params);
-    writeScalarToFileProjection(baryonDensity, "nB_projection",params);
-    writeVectorToFile(baryonDiffusion, "V_x", 1,params);
-    writeVectorToFile(baryonDiffusion, "V_y", 2,params);
-    writeVectorToFile(baryonDiffusion, "V_eta", 3,params);
+    writeScalarToFile(baryonDensity, "nB", params);
+    writeScalarToFileProjection(baryonDensity, "nB_projection", params);
+    writeVectorToFile(baryonDiffusion, "Vt", 0, params);
+    writeVectorToFile(baryonDiffusion, "Vx", 1, params);
+    writeVectorToFile(baryonDiffusion, "Vy", 2, params);
+    writeVectorToFile(baryonDiffusion, "Vn", 3, params);
   }
-  */
 
   //free the memory
   free2dArray(stressTensor, 10);

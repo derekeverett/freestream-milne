@@ -199,7 +199,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
         if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
         {
-          
+
           double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + TAU*TAU*GSL_REAL(v3)*GSL_REAL(v3));
           double factor = 1.0 / sqrt(minkowskiLength);
 
@@ -212,66 +212,6 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
           flowVelocity[3][is] = GSL_REAL(v3) * factor;
         }
       }
-      /*
-      // begin new code that tries to select timelike eigenvector
-      double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
-      double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
-      double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
-      double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
-      double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + TAU*TAU*v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
-      double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
-      //try selecting timelike eigenvector
-      if (minkowskiLength > 0.0)
-      {
-        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
-        //if (energyDensity[is] < 0.0) printf("negative energy density! e = %f\n", energyDensity[is]);
-        flowVelocity[0][is] = v0 * scaleFactor;
-        flowVelocity[1][is] = v1 * scaleFactor;
-        flowVelocity[2][is] = v2 * scaleFactor;
-        flowVelocity[3][is] = v3 * scaleFactor;
-
-        if (REGULATE && (energyDensity[is] * tolerance < 1.0)) //regulate very dilute regions of space
-        {
-          energyDensity[is] = 0.0;
-          flowVelocity[0][is] = 1.0;
-          flowVelocity[1][is] = 0.0;
-          flowVelocity[2][is] = 0.0;
-          flowVelocity[3][is] = 0.0;
-        }
-      }
-      //end new code
-      */
-      //begin old code that checks energy density rather than if flow is timelike
-      /*
-      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0.0) //try checking if eigenvector is timelike instead! see above
-      {
-        double v0 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 0));
-        double v1 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 1));
-        double v2 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 2));
-        double v3 = GSL_REAL(gsl_matrix_complex_get(eigen_vectors, i , 3));
-        //gsl normalizes eigenvectors to euclidean length = 1; we want a vector with minkowski length = 1, so we rescale
-        //note factors of TAU appropriate for milne coordinates
-        double minkowskiLength = v0*v0 - (v1*v1 + v2*v2 + TAU*TAU*v3*v3); //we want to flow velocity normalized s.t. minkowskiLength = 1
-        double scaleFactor = 1.0 / sqrt(minkowskiLength); //so we need to scale all the elements of the eigenvector by scaleFactor
-        //printf("scaled eigenvector %d is (%f ,%f , %f, %f) and eigenvalue %d is %f\n", i, v0, v1, v2, v3, i, GSL_REAL(eigenvalue));
-        //set values of energy density and flow velocity
-        if (scaleFactor != scaleFactor) printf("NANNY NAN!\n");
-        if ((REGULATE) && (GSL_REAL(eigenvalue) * tolerance <= 1.0)) //regulate dilute regions - check if this helps or not
-        {
-          energyDensity[is] = 0.0;
-          flowVelocity[0][is] = 1.0;
-          flowVelocity[1][is] = 0.0;
-          flowVelocity[2][is] = 0.0;
-          flowVelocity[3][is] = 0.0;
-        }
-        energyDensity[is] = GSL_REAL(eigenvalue) / scaleFactor; //do we need to scale the eigenvalue by the inverse of scaleFactor?
-        flowVelocity[0][is] = v0 * scaleFactor;
-        flowVelocity[1][is] = v1 * scaleFactor;
-        flowVelocity[2][is] = v2 * scaleFactor;
-        flowVelocity[3][is] = v3 * scaleFactor;
-      }
-      */
-      //ends old code
     }
   }
 }
