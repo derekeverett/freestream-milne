@@ -42,9 +42,41 @@ class FREESTREAMMILNE {
     std::vector<float> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
-    void output_to_vectors(std::vector<float>&, std::vector<float>&);
+    void output_to_vectors(std::vector<float>&, //e
+                            std::vector<float>&, //p
+                            std::vector<float>&, //ut
+                            std::vector<float>&, //ux
+                            std::vector<float>&, //uy
+                            std::vector<float>&, //un
+                            std::vector<float>&, //pitt
+                            std::vector<float>&, //pitx
+                            std::vector<float>&, //pity
+                            std::vector<float>&, //pitn
+                            std::vector<float>&, //pixx
+                            std::vector<float>&, //pixy
+                            std::vector<float>&, //pixn
+                            std::vector<float>&, //piyy
+                            std::vector<float>&, //piyn
+                            std::vector<float>&, //pinn
+                            std::vector<float>&); //Pi
+
     std::vector<float> final_energy_density;
     std::vector<float> final_pressure;
+    std::vector<float> final_ut;
+    std::vector<float> final_ux;
+    std::vector<float> final_uy;
+    std::vector<float> final_un;
+    std::vector<float> final_pitt;
+    std::vector<float> final_pitx;
+    std::vector<float> final_pity;
+    std::vector<float> final_pitn;
+    std::vector<float> final_pixx;
+    std::vector<float> final_pixy;
+    std::vector<float> final_pixn;
+    std::vector<float> final_piyy;
+    std::vector<float> final_piyn;
+    std::vector<float> final_pinn;
+    std::vector<float> final_Pi;
 
 };
 
@@ -62,9 +94,40 @@ void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_i
 }
 
 //use this function to return final hydro variables as vectors within JETSCAPE
-void FREESTREAMMILNE::output_to_vectors(std::vector<float> &energy_density_out, std::vector<float> &pressure_out) {
+void FREESTREAMMILNE::output_to_vectors(std::vector<float> &energy_density_out,
+                                        std::vector<float> &pressure_out,
+                                        std::vector<float> &ut_out,
+                                        std::vector<float> &ux_out,
+                                        std::vector<float> &uy_out,
+                                        std::vector<float> &un_out,
+                                        std::vector<float> &pitt_out,
+                                        std::vector<float> &pitx_out,
+                                        std::vector<float> &pity_out,
+                                        std::vector<float> &pitn_out,
+                                        std::vector<float> &pixx_out,
+                                        std::vector<float> &pixy_out,
+                                        std::vector<float> &pixn_out,
+                                        std::vector<float> &piyy_out,
+                                        std::vector<float> &piyn_out,
+                                        std::vector<float> &pinn_out,
+                                        std::vector<float> &Pi_out) {
   energy_density_out = final_energy_density;
   pressure_out = final_pressure;
+  ut_out = final_ut;
+  ux_out = final_ux;
+  uy_out = final_uy;
+  un_out = final_un;
+  pitt_out = final_pitt;
+  pitx_out = final_pitx;
+  pity_out = final_pity;
+  pitn_out = final_pitn;
+  pixx_out = final_pixx;
+  pixy_out = final_pixy;
+  pixn_out = final_pixn;
+  piyy_out = final_piyy;
+  piyn_out = final_piyn;
+  pinn_out = final_pinn;
+  Pi_out = final_Pi;
 }
 
 //where the magic happens
@@ -423,12 +486,43 @@ if (params.BARYON)
 //support for JETSCAPE - write hydro variables to vectors
 final_energy_density.resize(params.DIM);
 final_pressure.resize(params.DIM);
+final_ut.resize(params.DIM);
+final_ux.resize(params.DIM);
+final_uy.resize(params.DIM);
+final_un.resize(params.DIM);
+final_pitt.resize(params.DIM);
+final_pitx.resize(params.DIM);
+final_pity.resize(params.DIM);
+final_pitn.resize(params.DIM);
+final_pixx.resize(params.DIM);
+final_pixy.resize(params.DIM);
+final_pixn.resize(params.DIM);
+final_piyy.resize(params.DIM);
+final_piyn.resize(params.DIM);
+final_pinn.resize(params.DIM);
+final_Pi.resize(params.DIM);
+
 if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 {
-  for (int i = 0; i < params.DIM; i++)
+  for (int is = 0; is < params.DIM; is++)
   {
-    final_energy_density[i] = energyDensity[i];
-    final_pressure[i] = pressure[i];
+    final_energy_density[is] = energyDensity[is];
+    final_pressure[is] = pressure[is];
+    final_ut[is] = flowVelocity[0][is];
+    final_ux[is] = flowVelocity[1][is];
+    final_uy[is] = flowVelocity[2][is];
+    final_un[is] = flowVelocity[3][is];
+    final_pitt[is] = shearTensor[0][is];
+    final_pitx[is] = shearTensor[1][is];
+    final_pity[is] = shearTensor[2][is];
+    final_pitn[is] = shearTensor[3][is];
+    final_pixx[is] = shearTensor[4][is];
+    final_pixy[is] = shearTensor[5][is];
+    final_pixn[is] = shearTensor[6][is];
+    final_piyy[is] = shearTensor[7][is];
+    final_piyn[is] = shearTensor[8][is];
+    final_pinn[is] = shearTensor[9][is];
+    final_Pi[is] = bulkPressure[is];
   }
 }
 
