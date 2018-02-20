@@ -8,7 +8,7 @@
 
 #define PI 3.141592654f
 
-//#pragma acc routine //build a copy of function to run on device 
+//#pragma acc routine //build a copy of function to run on device
 void freeStream(float **density, float ***shiftedDensity, parameters params)
 {
   int DIM_X = params.DIM_X;
@@ -30,7 +30,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
   #pragma omp parallel for
-  #pragma acc parallel loop 
+  #pragma acc parallel loop
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
@@ -49,7 +49,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
         //can these trig and hypertrig functions be tabulated ahead of time?
-        float eta_new = asinh((TAU / TAU0) * sinh(eta - rap)) + rap;
+        float eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap;
         float x_new = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         float y_new = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
 
@@ -89,21 +89,37 @@ void convertInitialDensity(float *initialEnergyDensity, float **density, paramet
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
 
-  for (int is = 0; is < DIM; is++)
+  if (DIM_ETA == 1) //catch the special case of 2+1D freestreaming; note DIM_RAP must also be 1 ! the normalization with SIGMA -> 0 does not generalize?
   {
-    int ix = is / (DIM_Y * DIM_ETA);
-    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
-    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
-
-    float eta = (float)ieta * DETA  + etamin;
-
-    for (int irap = 0; irap < DIM_RAP; irap++)
+    for (int is = 0; is < DIM; is++)
     {
-      float rap = (float)irap * DRAP + rapmin;
-      float rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA));
-      density[is][irap] = initialEnergyDensity[is] * norm_factor * rap_factor; //this is initial G^(tau,tau)
-    }
+      int ix = is / (DIM_Y);
+      int iy = (is - (DIM_Y * ix));
 
+      for (int irap = 0; irap < DIM_RAP; irap++)
+      {
+        density[is][irap] = initialEnergyDensity[is] / (2.0 * PI); //this is initial G^(tau,tau)
+      }
+    }
+  }
+
+  else
+  {
+    for (int is = 0; is < DIM; is++)
+    {
+      int ix = is / (DIM_Y * DIM_ETA);
+      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+      float eta = (float)ieta * DETA  + etamin;
+
+      for (int irap = 0; irap < DIM_RAP; irap++)
+      {
+        float rap = (float)irap * DRAP + rapmin;
+        float rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA));
+        density[is][irap] = initialEnergyDensity[is] * norm_factor * rap_factor; //this is initial G^(tau,tau)
+      }
+    }
   }
 }
 //this creates the initial J^(tau) function, a function of spatial coordinates and rapidity

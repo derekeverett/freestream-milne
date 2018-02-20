@@ -92,7 +92,7 @@ int main(void)
   if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 7.0, 7.0, 5.0, params);
+    initializeEllipticalGauss(initialEnergyDensity, 4.0, 4.0, 5.0, params);
     if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
@@ -148,12 +148,20 @@ int main(void)
   }
 
   //write initial energy density and baryon density to file
-  /*
   writeScalarToFile(initialEnergyDensity, "initial_e", params);
   if (params.BARYON) writeScalarToFile(initialChargeDensity, "initial_nB", params);
   writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection", params);
   if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, "initial_nB_projection", params);
-  */
+
+  /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
+  printf("Calculating 1 / tau scaled profile for testing \n");
+  //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
+  float *scaledEnergyDensity = NULL;
+  scaledEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+  for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = initialEnergyDensity[is] * (params.TAU0 / params.TAU);
+  writeScalarToFile(scaledEnergyDensity, "scaled_e", params);
+  writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
+  /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
   //convert the energy density profile into the initial density profile to be streamed and free memory
   convertInitialDensity(initialEnergyDensity, density, params);

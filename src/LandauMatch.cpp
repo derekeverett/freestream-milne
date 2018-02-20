@@ -82,7 +82,8 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
           stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
         }
       }
-      stressTensor[ivar][is] = stressTensor[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
+      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //catch the special case of 2+1D FS
+      else stressTensor[ivar][is] = stressTensor[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
     }
   }
 }

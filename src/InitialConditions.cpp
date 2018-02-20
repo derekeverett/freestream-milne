@@ -24,7 +24,7 @@ void initializeGauss(float *density, float b, parameters params) // b is the var
   float DY = params.DY;
   float DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -51,7 +51,7 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta, p
   float DY = params.DY;
   float DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -78,7 +78,7 @@ void initializeMCGauss(float * density, float b, parameters params)
   float DY = params.DY;
   float DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -105,7 +105,7 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta,
   float DY = params.DY;
   float DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature 
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -135,19 +135,28 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
   //first read in the transverse profile from superMC block data format
   float temp = 0.0;
   std::ifstream superMCFile;
-  superMCFile.open("initial_superMC_ed/data_12_2760_2.5fm_51pts/ed_event_7_block.dat");
-  for (int ix = 0; ix < DIM_X; ix++)
+  superMCFile.open("initial_superMC_ed/2.dat");
+  if (superMCFile.is_open())
   {
-    for (int iy = 0; iy < DIM_Y; iy++)
+    for (int ix = 0; ix < DIM_X; ix++)
     {
-      superMCFile >> temp;
-      for (int ieta = 0; ieta < DIM_ETA; ieta++) //copy the same value for all eta, then we will multiply by eta dependent function
+      for (int iy = 0; iy < DIM_Y; iy++)
       {
-        int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
-        density[is] = temp;
+        superMCFile >> temp;
+        for (int ieta = 0; ieta < DIM_ETA; ieta++) //copy the same value for all eta, then we will multiply by eta dependent function
+        {
+          int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
+          density[is] = temp;
+        }
       }
     }
   }
+
+  else
+  {
+    printf("Could not find initial profile in initial_superMC_ed!");
+  }
+  
   superMCFile.close();
 
   //now multiply by an eta-dependent profile; etaWidth is the width of the eta profile
