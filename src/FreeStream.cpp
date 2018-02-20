@@ -70,11 +70,13 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   }
 }
 //this creates the initial G^(tau,tau) function, a function of spatial coordinates and rapidity
+//in the special case if 2+1D, this calculates F^(tau,tau) in the notation of (PRC 91, 064906)
 //rapidity dependence is determined by the assumption for rapidity dependence of the initial distribution function
 void convertInitialDensity(float *initialEnergyDensity, float **density, parameters params)
 {
   float SIGMA = params.SIGMA;
   int DIM = params.DIM;
+  float TAU0 = params.TAU0;
   //int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
@@ -98,7 +100,7 @@ void convertInitialDensity(float *initialEnergyDensity, float **density, paramet
 
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
-        density[is][irap] = initialEnergyDensity[is] / (2.0 * PI); //this is initial G^(tau,tau)
+        density[is][irap] = initialEnergyDensity[is] * (TAU0 / (2.0 * PI)); //this is initial F^(tau,tau) in the notation of (PRC 91, 064906)
       }
     }
   }
