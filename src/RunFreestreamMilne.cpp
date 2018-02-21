@@ -17,6 +17,7 @@
 
 #define PI 3.141592654f
 #define PRINT_SCREEN 1 //turn on for program info to print to terminal
+#define TEST_INTERPOL 0 //try calculating the profile at intermediate times by interpolating between the initial profile and final (streamed) profile...
 
 int main(void)
 {
@@ -154,18 +155,21 @@ int main(void)
   if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, "initial_nB_projection", params);
 
   /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
-  printf("Calculating 1 / tau scaled profile for testing \n");
   //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
   float *scaledEnergyDensity = NULL;
-  scaledEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
-  for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = initialEnergyDensity[is] * (params.TAU0 / params.TAU);
-  writeScalarToFile(scaledEnergyDensity, "scaled_e", params);
-  writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
+  if (TEST_INTERPOL)
+  {
+    printf("Calculating 1 / tau scaled profile for testing \n");
+    scaledEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+    for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = initialEnergyDensity[is] * (params.TAU0 / params.TAU);
+    writeScalarToFile(scaledEnergyDensity, "scaled_e", params);
+    writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
+  }
   /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
   //convert the energy density profile into the initial density profile to be streamed and free memory
   convertInitialDensity(initialEnergyDensity, density, params);
-  free(initialEnergyDensity);
+  if (!TEST_INTERPOL) free(initialEnergyDensity);
   //convert the baryon density profile into the initial baryon density profile to be streamed and free memory
   if (params.BARYON) convertInitialChargeDensity(initialChargeDensity, chargeDensity, params);
   if (params.BARYON) free(initialChargeDensity);
@@ -315,6 +319,22 @@ int main(void)
   calculatePressure(energyDensity, baryonDensity, pressure, params);
   calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
   calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
+
+  /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
+  if (TEST_INTERPOL)
+  {
+    printf("approximating energy density profile at intermed. times by interpolating between initial and final profiles \n");
+    float TAU = params.TAU;
+    float TAU0 = params.TAU0;
+    float DTAU = params.DTAU;
+    float tau_i = TAU0 + (DTAU / 2.0); //some intermediate time
+    float c_1 = (TAU0 / tau_i);
+    float c_2 = (tau_i - TAU0) / DTAU / tau_i;
+    for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = c_1 * initialEnergyDensity[is] + c_2 * ((TAU * energyDensity[is] - TAU0 * initialEnergyDensity[is]));
+    writeScalarToFile(scaledEnergyDensity, "tau_interpolated_e", params);
+    writeScalarToFileProjection(scaledEnergyDensity, "tau_interpolated_e_projection", params);
+  }
+  /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
   if (PRINT_SCREEN) printf("writing hydro variables to file\n");
 
