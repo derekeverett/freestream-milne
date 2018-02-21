@@ -87,7 +87,6 @@ FREESTREAMMILNE::FREESTREAMMILNE() {
 FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
-
 //use this function to initialize energy density within JETSCAPE
 void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
   init_energy_density = energy_density_in;
@@ -297,6 +296,9 @@ double sec = 0.0;
 #ifdef _OPENMP
 sec = omp_get_wtime();
 #endif
+
+///////////  BEGIN LOOP OVER TIME STEPS HERE ////////////////////////
+////////// MOVE DECLARATIONS AND ALLOCATION OUTSIDE LOOP? //////////
 freeStream(density, shiftedDensity, params);
 
 //#pragma acc update host(shiftedDensity)
@@ -322,6 +324,7 @@ float **baryonCurrent = NULL;
 if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
 
 //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
+//hypertrig table depends on TAU, so need to keep this inside loop
 float ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
@@ -424,6 +427,10 @@ calculatePressure(energyDensity, baryonDensity, pressure, params);
 calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
 calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
 
+
+////// FILL BIG ARRAY WITH SPACETIME HISTORY OF HYDRO VARIABLES
+
+///////////  END LOOP OVER TIME STEPS HERE ////////////////////////
 if (PRINT_SCREEN) printf("writing hydro variables\n");
 
 
