@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include "Parameter.h"
-
+#include <math.h>
 void writeScalarToFile(float *var, char name[255], parameters params)
 {
   int DIM_X = params.DIM_X;

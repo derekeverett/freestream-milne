@@ -1,0 +1,3 @@
+/Users/derek/github/JETSCAPE-COMP/src/framework/3rdparty/freestream-milne/src/build/CMakeFiles/rebuild_cache.dir
+/Users/derek/github/JETSCAPE-COMP/src/framework/3rdparty/freestream-milne/src/build/CMakeFiles/edit_cache.dir
+/Users/derek/github/JETSCAPE-COMP/src/framework/3rdparty/freestream-milne/src/build/CMakeFiles/freestream.dir
