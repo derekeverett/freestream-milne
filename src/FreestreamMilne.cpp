@@ -38,45 +38,45 @@ class FREESTREAMMILNE {
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
-    void initialize_from_vector(std::vector<float>);
-    std::vector<float> init_energy_density;
+    void initialize_from_vector(std::vector<double>);
+    std::vector<double> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
-    void output_to_vectors(std::vector<float>&, //e
-                            std::vector<float>&, //p
-                            std::vector<float>&, //ut
-                            std::vector<float>&, //ux
-                            std::vector<float>&, //uy
-                            std::vector<float>&, //un
-                            std::vector<float>&, //pitt
-                            std::vector<float>&, //pitx
-                            std::vector<float>&, //pity
-                            std::vector<float>&, //pitn
-                            std::vector<float>&, //pixx
-                            std::vector<float>&, //pixy
-                            std::vector<float>&, //pixn
-                            std::vector<float>&, //piyy
-                            std::vector<float>&, //piyn
-                            std::vector<float>&, //pinn
-                            std::vector<float>&); //Pi
+    void output_to_vectors(std::vector<double>&, //e
+                            std::vector<double>&, //p
+                            std::vector<double>&, //ut
+                            std::vector<double>&, //ux
+                            std::vector<double>&, //uy
+                            std::vector<double>&, //un
+                            std::vector<double>&, //pitt
+                            std::vector<double>&, //pitx
+                            std::vector<double>&, //pity
+                            std::vector<double>&, //pitn
+                            std::vector<double>&, //pixx
+                            std::vector<double>&, //pixy
+                            std::vector<double>&, //pixn
+                            std::vector<double>&, //piyy
+                            std::vector<double>&, //piyn
+                            std::vector<double>&, //pinn
+                            std::vector<double>&); //Pi
 
-    std::vector<float> final_energy_density;
-    std::vector<float> final_pressure;
-    std::vector<float> final_ut;
-    std::vector<float> final_ux;
-    std::vector<float> final_uy;
-    std::vector<float> final_un;
-    std::vector<float> final_pitt;
-    std::vector<float> final_pitx;
-    std::vector<float> final_pity;
-    std::vector<float> final_pitn;
-    std::vector<float> final_pixx;
-    std::vector<float> final_pixy;
-    std::vector<float> final_pixn;
-    std::vector<float> final_piyy;
-    std::vector<float> final_piyn;
-    std::vector<float> final_pinn;
-    std::vector<float> final_Pi;
+    std::vector<double> final_energy_density;
+    std::vector<double> final_pressure;
+    std::vector<double> final_ut;
+    std::vector<double> final_ux;
+    std::vector<double> final_uy;
+    std::vector<double> final_un;
+    std::vector<double> final_pitt;
+    std::vector<double> final_pitx;
+    std::vector<double> final_pity;
+    std::vector<double> final_pitn;
+    std::vector<double> final_pixx;
+    std::vector<double> final_pixy;
+    std::vector<double> final_pixn;
+    std::vector<double> final_piyy;
+    std::vector<double> final_piyn;
+    std::vector<double> final_pinn;
+    std::vector<double> final_Pi;
 
 };
 
@@ -88,28 +88,28 @@ FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
 //use this function to initialize energy density within JETSCAPE
-void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
+void FREESTREAMMILNE::initialize_from_vector(std::vector<double> energy_density_in) {
   init_energy_density = energy_density_in;
 }
 
 //use this function to return final hydro variables as vectors within JETSCAPE
-void FREESTREAMMILNE::output_to_vectors(std::vector<float> &energy_density_out,
-                                        std::vector<float> &pressure_out,
-                                        std::vector<float> &ut_out,
-                                        std::vector<float> &ux_out,
-                                        std::vector<float> &uy_out,
-                                        std::vector<float> &un_out,
-                                        std::vector<float> &pitt_out,
-                                        std::vector<float> &pitx_out,
-                                        std::vector<float> &pity_out,
-                                        std::vector<float> &pitn_out,
-                                        std::vector<float> &pixx_out,
-                                        std::vector<float> &pixy_out,
-                                        std::vector<float> &pixn_out,
-                                        std::vector<float> &piyy_out,
-                                        std::vector<float> &piyn_out,
-                                        std::vector<float> &pinn_out,
-                                        std::vector<float> &Pi_out) {
+void FREESTREAMMILNE::output_to_vectors(std::vector<double> &energy_density_out,
+                                        std::vector<double> &pressure_out,
+                                        std::vector<double> &ut_out,
+                                        std::vector<double> &ux_out,
+                                        std::vector<double> &uy_out,
+                                        std::vector<double> &un_out,
+                                        std::vector<double> &pitt_out,
+                                        std::vector<double> &pitx_out,
+                                        std::vector<double> &pity_out,
+                                        std::vector<double> &pitn_out,
+                                        std::vector<double> &pixx_out,
+                                        std::vector<double> &pixy_out,
+                                        std::vector<double> &pixn_out,
+                                        std::vector<double> &piyy_out,
+                                        std::vector<double> &piyn_out,
+                                        std::vector<double> &pinn_out,
+                                        std::vector<double> &Pi_out) {
   energy_density_out = final_energy_density;
   pressure_out = final_pressure;
   ut_out = final_ut;
@@ -228,7 +228,7 @@ else if (params.IC_ENERGY == 5)
   //note that this is not safe - if one passes an empty vector it will not throw an error
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = (float)init_energy_density[i];
 }
 else
 {
@@ -513,23 +513,23 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 {
   for (int is = 0; is < params.DIM; is++)
   {
-    final_energy_density[is] = energyDensity[is];
-    final_pressure[is] = pressure[is];
-    final_ut[is] = flowVelocity[0][is];
-    final_ux[is] = flowVelocity[1][is];
-    final_uy[is] = flowVelocity[2][is];
-    final_un[is] = flowVelocity[3][is];
-    final_pitt[is] = shearTensor[0][is];
-    final_pitx[is] = shearTensor[1][is];
-    final_pity[is] = shearTensor[2][is];
-    final_pitn[is] = shearTensor[3][is];
-    final_pixx[is] = shearTensor[4][is];
-    final_pixy[is] = shearTensor[5][is];
-    final_pixn[is] = shearTensor[6][is];
-    final_piyy[is] = shearTensor[7][is];
-    final_piyn[is] = shearTensor[8][is];
-    final_pinn[is] = shearTensor[9][is];
-    final_Pi[is] = bulkPressure[is];
+    final_energy_density[is] = (double)energyDensity[is];
+    final_pressure[is] = (double)pressure[is];
+    final_ut[is] = (double)flowVelocity[0][is];
+    final_ux[is] = (double)flowVelocity[1][is];
+    final_uy[is] = (double)flowVelocity[2][is];
+    final_un[is] = (double)flowVelocity[3][is];
+    final_pitt[is] = (double)shearTensor[0][is];
+    final_pitx[is] = (double)shearTensor[1][is];
+    final_pity[is] = (double)shearTensor[2][is];
+    final_pitn[is] = (double)shearTensor[3][is];
+    final_pixx[is] = (double)shearTensor[4][is];
+    final_pixy[is] = (double)shearTensor[5][is];
+    final_pixn[is] = (double)shearTensor[6][is];
+    final_piyy[is] = (double)shearTensor[7][is];
+    final_piyn[is] = (double)shearTensor[8][is];
+    final_pinn[is] = (double)shearTensor[9][is];
+    final_Pi[is] = (double)bulkPressure[is];
   }
 }
 
