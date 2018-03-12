@@ -74,19 +74,19 @@ int main(void)
   }
   */
   //the initial energy density spatial profile
-  float *initialEnergyDensity = NULL;
-  initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+  double *initialEnergyDensity = NULL;
+  initialEnergyDensity = (double *)calloc(params.DIM, sizeof(double));
 
   //the initial baryon density spatial profile
-  float *initialChargeDensity = NULL;
-  if(params.BARYON) initialChargeDensity = (float *)calloc(params.DIM, sizeof(float));
+  double *initialChargeDensity = NULL;
+  if(params.BARYON) initialChargeDensity = (double *)calloc(params.DIM, sizeof(double));
 
   //the initial density G(tilde)^(tau,tau) at time tau_0
-  float **density = NULL;
+  double **density = NULL;
   density = calloc2dArray(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //the initial density J(tilde)^(tau) at time tau_0
-  float **chargeDensity = NULL;
+  double **chargeDensity = NULL;
   if(params.BARYON) chargeDensity = calloc2dArray(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //initialize energy density
@@ -156,11 +156,11 @@ int main(void)
 
   /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
   //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
-  float *scaledEnergyDensity = NULL;
+  double *scaledEnergyDensity = NULL;
   if (TEST_INTERPOL)
   {
     printf("Calculating 1 / tau scaled profile for testing \n");
-    scaledEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+    scaledEnergyDensity = (double *)calloc(params.DIM, sizeof(double));
     for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = initialEnergyDensity[is] * (params.TAU0 / params.TAU);
     writeScalarToFile(scaledEnergyDensity, "scaled_e", params);
     writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
@@ -175,11 +175,11 @@ int main(void)
   if (params.BARYON) free(initialChargeDensity);
 
   //the shifted energy density profile G^(tau,tau) at time tau
-  float ***shiftedDensity = NULL;
+  double ***shiftedDensity = NULL;
   shiftedDensity = calloc3dArray(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //the shifted baryon density profile J^(tau) at time tau
-  float ***shiftedChargeDensity = NULL;
+  double ***shiftedChargeDensity = NULL;
   if(params.BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //perform the free streaming time-update step and free up memory
@@ -210,15 +210,15 @@ int main(void)
   if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
 
   //the ten independent components of the stress tensor
-  float **stressTensor = NULL;
+  double **stressTensor = NULL;
   stressTensor = calloc2dArray(stressTensor, 10, params.DIM);
 
   //the four independent components of baryon current four-vector
-  float **baryonCurrent = NULL;
+  double **baryonCurrent = NULL;
   if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
 
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
-  float ****hypertrigTable = NULL;
+  double ****hypertrigTable = NULL;
   hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
   if (PRINT_SCREEN) printf("calculating hypertrig table\n");
@@ -263,31 +263,31 @@ int main(void)
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
-  float *energyDensity = NULL;
-  energyDensity = (float *)calloc(params.DIM, sizeof(float));
+  double *energyDensity = NULL;
+  energyDensity = (double *)calloc(params.DIM, sizeof(double));
 
   //the baryon density
-  float *baryonDensity = NULL;
-  if(params.BARYON) baryonDensity = (float *)calloc(params.DIM, sizeof(float));
+  double *baryonDensity = NULL;
+  if(params.BARYON) baryonDensity = (double *)calloc(params.DIM, sizeof(double));
 
   //the flow velocity
-  float **flowVelocity = NULL;
+  double **flowVelocity = NULL;
   flowVelocity = calloc2dArray(flowVelocity, 4, params.DIM);
 
   //the pressure
-  float *pressure = NULL;
-  pressure = (float *)calloc(params.DIM, sizeof(float));
+  double *pressure = NULL;
+  pressure = (double *)calloc(params.DIM, sizeof(double));
 
   //the bulk pressure Pi
-  float *bulkPressure = NULL;
-  bulkPressure = (float *)calloc(params.DIM, sizeof(float));
+  double *bulkPressure = NULL;
+  bulkPressure = (double *)calloc(params.DIM, sizeof(double));
 
   //the shear stress tensor
-  float **shearTensor = NULL;
+  double **shearTensor = NULL;
   shearTensor = calloc2dArray(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
 
   //the baryon diffusion current vector
-  float **baryonDiffusion = NULL;
+  double **baryonDiffusion = NULL;
   if(params.BARYON) baryonDiffusion = calloc2dArray(baryonDiffusion, 4, params.DIM);
 
   //solve the eigenvalue problem for the energy density and flow velocity
@@ -324,12 +324,12 @@ int main(void)
   if (TEST_INTERPOL)
   {
     printf("approximating energy density profile at intermed. times by interpolating between initial and final profiles \n");
-    float TAU = params.TAU;
-    float TAU0 = params.TAU0;
-    float DTAU = params.DTAU;
-    float tau_i = TAU0 + (DTAU / 2.0); //some intermediate time
-    float c_1 = (TAU0 / tau_i);
-    float c_2 = (tau_i - TAU0) / DTAU / tau_i;
+    double TAU = params.TAU;
+    double TAU0 = params.TAU0;
+    double DTAU = params.DTAU;
+    double tau_i = TAU0 + (DTAU / 2.0); //some intermediate time
+    double c_1 = (TAU0 / tau_i);
+    double c_2 = (tau_i - TAU0) / DTAU / tau_i;
     for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = c_1 * initialEnergyDensity[is] + c_2 * ((TAU * energyDensity[is] - TAU0 * initialEnergyDensity[is]));
     writeScalarToFile(scaledEnergyDensity, "tau_interpolated_e", params);
     writeScalarToFileProjection(scaledEnergyDensity, "tau_interpolated_e_projection", params);

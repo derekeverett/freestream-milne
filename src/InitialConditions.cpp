@@ -5,7 +5,7 @@
 #include "Parameter.h"
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
-void initializeZero(float *density, parameters params)
+void initializeZero(double *density, parameters params)
 {
   int DIM = params.DIM;
   for (int is = 0; is < DIM; is++)
@@ -14,17 +14,17 @@ void initializeZero(float *density, parameters params)
   }
 }
 
-void initializeGauss(float *density, float b, parameters params) // b is the variance ('spherically' symmetric)
+void initializeGauss(double *density, double b, parameters params) // b is the variance ('spherically' symmetric)
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
-  float DX = params.DX;
-  float DY = params.DY;
-  float DETA = params.DETA;
+  double DX = params.DX;
+  double DY = params.DY;
+  double DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+  double e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -33,25 +33,25 @@ void initializeGauss(float *density, float b, parameters params) // b is the var
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
-    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
-    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
-    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    double x = (double)ix * DX  - ((double)(DIM_X-1)) / 2.0 * DX;
+    double y = (double)iy * DY  - ((double)(DIM_Y-1)) / 2.0 * DY;
+    double eta = (double)ieta * DETA  - ((double)(DIM_ETA-1)) / 2.0 * DETA;
 
     density[is] = e0 * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
   }
 }
 
-void initializeEllipticalGauss(float *density, float bx, float by, float beta, parameters params) // bx is the x variance etc...
+void initializeEllipticalGauss(double *density, double bx, double by, double beta, parameters params) // bx is the x variance etc...
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
-  float DX = params.DX;
-  float DY = params.DY;
-  float DETA = params.DETA;
+  double DX = params.DX;
+  double DY = params.DY;
+  double DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+  double e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -60,25 +60,25 @@ void initializeEllipticalGauss(float *density, float bx, float by, float beta, p
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
-    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
-    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
-    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    double x = (double)ix * DX  - ((double)(DIM_X-1)) / 2.0 * DX;
+    double y = (double)iy * DY  - ((double)(DIM_Y-1)) / 2.0 * DY;
+    double eta = (double)ieta * DETA  - ((double)(DIM_ETA-1)) / 2.0 * DETA;
 
     density[is] = e0 * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
   }
 }
 
-void initializeMCGauss(float * density, float b, parameters params)
+void initializeMCGauss(double * density, double b, parameters params)
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
-  float DX = params.DX;
-  float DY = params.DY;
-  float DETA = params.DETA;
+  double DX = params.DX;
+  double DY = params.DY;
+  double DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+  double e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -87,25 +87,25 @@ void initializeMCGauss(float * density, float b, parameters params)
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
-    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
-    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
-    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    double x = (double)ix * DX  - ((double)(DIM_X-1)) / 2.0 * DX;
+    double y = (double)iy * DY  - ((double)(DIM_Y-1)) / 2.0 * DY;
+    double eta = (double)ieta * DETA  - ((double)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = e0 * ((float)rand() / RAND_MAX) * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
+    density[is] = e0 * ((double)rand() / RAND_MAX) * exp(-(1.0 / b) * ((x * x) + (y * y) + (eta * eta)));
   }
 }
 
-void initializeEllipticalMCGauss(float *density, float bx, float by, float beta, parameters params) // bx is the x variance etc...
+void initializeEllipticalMCGauss(double *density, double bx, double by, double beta, parameters params) // bx is the x variance etc...
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
-  float DX = params.DX;
-  float DY = params.DY;
-  float DETA = params.DETA;
+  double DX = params.DX;
+  double DY = params.DY;
+  double DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+  double e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -114,26 +114,26 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta,
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
     //does it work for even number of points?
-    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
-    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
-    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    double x = (double)ix * DX  - ((double)(DIM_X-1)) / 2.0 * DX;
+    double y = (double)iy * DY  - ((double)(DIM_Y-1)) / 2.0 * DY;
+    double eta = (double)ieta * DETA  - ((double)(DIM_ETA-1)) / 2.0 * DETA;
 
-    density[is] = e0 * ((float)rand() / RAND_MAX) * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
+    density[is] = e0 * ((double)rand() / RAND_MAX) * exp(-(1.0 / bx) * (x * x)) * exp(-(1.0 / by) * (y * y)) * exp(-(1.0 / beta) * (eta * eta));
   }
 }
 
-void readEnergyDensitySuperMCBlock(float *density, parameters params)
+void readEnergyDensitySuperMCBlock(double *density, parameters params)
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
-  float ETA_WIDTH = params.ETA_WIDTH;
-  float ETA_FLAT = params.ETA_FLAT;
-  float DETA = params.DETA;
+  double ETA_WIDTH = params.ETA_WIDTH;
+  double ETA_FLAT = params.ETA_FLAT;
+  double DETA = params.DETA;
 
   //first read in the transverse profile from superMC block data format
-  float temp = 0.0;
+  double temp = 0.0;
   std::ifstream superMCFile;
   superMCFile.open("initial_superMC_ed/2.dat");
   if (superMCFile.is_open())
@@ -156,7 +156,7 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
   {
     printf("Could not find initial profile in initial_superMC_ed!");
   }
-  
+
   superMCFile.close();
 
   //now multiply by an eta-dependent profile; etaWidth is the width of the eta profile
@@ -166,9 +166,9 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
     int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
     int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
-    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    double eta = (double)ieta * DETA  - ((double)(DIM_ETA-1)) / 2.0 * DETA;
     //here we use a the same profile as GPU-VH (see arXiv:1608.06577v1 p. 38)
-    float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
+    double arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
     arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
     density[is] = density[is] * exp(arg);
   }

@@ -38,45 +38,45 @@ class FREESTREAMMILNE {
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
-    void initialize_from_vector(std::vector<float>);
-    std::vector<float> init_energy_density;
+    void initialize_from_vector(std::vector<double>);
+    std::vector<double> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
-    void output_to_vectors(std::vector<float>&, //e
-                            std::vector<float>&, //p
-                            std::vector<float>&, //ut
-                            std::vector<float>&, //ux
-                            std::vector<float>&, //uy
-                            std::vector<float>&, //un
-                            std::vector<float>&, //pitt
-                            std::vector<float>&, //pitx
-                            std::vector<float>&, //pity
-                            std::vector<float>&, //pitn
-                            std::vector<float>&, //pixx
-                            std::vector<float>&, //pixy
-                            std::vector<float>&, //pixn
-                            std::vector<float>&, //piyy
-                            std::vector<float>&, //piyn
-                            std::vector<float>&, //pinn
-                            std::vector<float>&); //Pi
+    void output_to_vectors(std::vector<double>&, //e
+                            std::vector<double>&, //p
+                            std::vector<double>&, //ut
+                            std::vector<double>&, //ux
+                            std::vector<double>&, //uy
+                            std::vector<double>&, //un
+                            std::vector<double>&, //pitt
+                            std::vector<double>&, //pitx
+                            std::vector<double>&, //pity
+                            std::vector<double>&, //pitn
+                            std::vector<double>&, //pixx
+                            std::vector<double>&, //pixy
+                            std::vector<double>&, //pixn
+                            std::vector<double>&, //piyy
+                            std::vector<double>&, //piyn
+                            std::vector<double>&, //pinn
+                            std::vector<double>&); //Pi
 
-    std::vector<float> final_energy_density;
-    std::vector<float> final_pressure;
-    std::vector<float> final_ut;
-    std::vector<float> final_ux;
-    std::vector<float> final_uy;
-    std::vector<float> final_un;
-    std::vector<float> final_pitt;
-    std::vector<float> final_pitx;
-    std::vector<float> final_pity;
-    std::vector<float> final_pitn;
-    std::vector<float> final_pixx;
-    std::vector<float> final_pixy;
-    std::vector<float> final_pixn;
-    std::vector<float> final_piyy;
-    std::vector<float> final_piyn;
-    std::vector<float> final_pinn;
-    std::vector<float> final_Pi;
+    std::vector<double> final_energy_density;
+    std::vector<double> final_pressure;
+    std::vector<double> final_ut;
+    std::vector<double> final_ux;
+    std::vector<double> final_uy;
+    std::vector<double> final_un;
+    std::vector<double> final_pitt;
+    std::vector<double> final_pitx;
+    std::vector<double> final_pity;
+    std::vector<double> final_pitn;
+    std::vector<double> final_pixx;
+    std::vector<double> final_pixy;
+    std::vector<double> final_pixn;
+    std::vector<double> final_piyy;
+    std::vector<double> final_piyn;
+    std::vector<double> final_pinn;
+    std::vector<double> final_Pi;
 
 };
 
@@ -88,28 +88,28 @@ FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
 //use this function to initialize energy density within JETSCAPE
-void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
+void FREESTREAMMILNE::initialize_from_vector(std::vector<double> energy_density_in) {
   init_energy_density = energy_density_in;
 }
 
 //use this function to return final hydro variables as vectors within JETSCAPE
-void FREESTREAMMILNE::output_to_vectors(std::vector<float> &energy_density_out,
-                                        std::vector<float> &pressure_out,
-                                        std::vector<float> &ut_out,
-                                        std::vector<float> &ux_out,
-                                        std::vector<float> &uy_out,
-                                        std::vector<float> &un_out,
-                                        std::vector<float> &pitt_out,
-                                        std::vector<float> &pitx_out,
-                                        std::vector<float> &pity_out,
-                                        std::vector<float> &pitn_out,
-                                        std::vector<float> &pixx_out,
-                                        std::vector<float> &pixy_out,
-                                        std::vector<float> &pixn_out,
-                                        std::vector<float> &piyy_out,
-                                        std::vector<float> &piyn_out,
-                                        std::vector<float> &pinn_out,
-                                        std::vector<float> &Pi_out) {
+void FREESTREAMMILNE::output_to_vectors(std::vector<double> &energy_density_out,
+                                        std::vector<double> &pressure_out,
+                                        std::vector<double> &ut_out,
+                                        std::vector<double> &ux_out,
+                                        std::vector<double> &uy_out,
+                                        std::vector<double> &un_out,
+                                        std::vector<double> &pitt_out,
+                                        std::vector<double> &pitx_out,
+                                        std::vector<double> &pity_out,
+                                        std::vector<double> &pitn_out,
+                                        std::vector<double> &pixx_out,
+                                        std::vector<double> &pixy_out,
+                                        std::vector<double> &pixn_out,
+                                        std::vector<double> &piyy_out,
+                                        std::vector<double> &piyn_out,
+                                        std::vector<double> &pinn_out,
+                                        std::vector<double> &Pi_out) {
   energy_density_out = final_energy_density;
   pressure_out = final_pressure;
   ut_out = final_ut;
@@ -178,26 +178,26 @@ if(PRINT_SCREEN)
 //allocate and initialize memory
 if (PRINT_SCREEN) printf("Allocating memory\n");
 /*
-float ***eqnOfStateTable;
+double ***eqnOfStateTable;
 if(params.EOS_TYPE == 3)
 { //table is regularly spaced in mu_B and T, with 450 values each
   eqnOfStateTable = calloc2dArray(eqnOfStateTable, 450, 450);
 }
 */
 //the initial energy density spatial profile
-float *initialEnergyDensity = NULL;
-initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+double *initialEnergyDensity = NULL;
+initialEnergyDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the initial baryon density spatial profile
-float *initialChargeDensity = NULL;
-if(params.BARYON) initialChargeDensity = (float *)calloc(params.DIM, sizeof(float));
+double *initialChargeDensity = NULL;
+if(params.BARYON) initialChargeDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the initial density G(tilde)^(tau,tau) at time tau_0
-float **density = NULL;
+double **density = NULL;
 density = calloc2dArray(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
 //the initial density J(tilde)^(tau) at time tau_0
-float **chargeDensity = NULL;
+double **chargeDensity = NULL;
 if(params.BARYON) chargeDensity = calloc2dArray(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
 //initialize energy density
@@ -278,11 +278,11 @@ if (params.BARYON) convertInitialChargeDensity(initialChargeDensity, chargeDensi
 if (params.BARYON) free(initialChargeDensity);
 
 //the shifted energy density profile G^(tau,tau) at time tau
-float ***shiftedDensity = NULL;
+double ***shiftedDensity = NULL;
 shiftedDensity = calloc3dArray(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
 //the shifted baryon density profile J^(tau) at time tau
-float ***shiftedChargeDensity = NULL;
+double ***shiftedChargeDensity = NULL;
 if(params.BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
 //perform the free streaming time-update step and free up memory
@@ -316,16 +316,16 @@ if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
 if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
 
 //the ten independent components of the stress tensor
-float **stressTensor = NULL;
+double **stressTensor = NULL;
 stressTensor = calloc2dArray(stressTensor, 10, params.DIM);
 
 //the four independent components of baryon current four-vector
-float **baryonCurrent = NULL;
+double **baryonCurrent = NULL;
 if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
 
 //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
 //hypertrig table depends on TAU, so need to keep this inside loop
-float ****hypertrigTable = NULL;
+double ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
 if (PRINT_SCREEN) printf("calculating hypertrig table\n");
@@ -370,31 +370,31 @@ free4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
 
 //variables to store the hydrodynamic variables after the Landau matching is performed
 //the energy density
-float *energyDensity = NULL;
-energyDensity = (float *)calloc(params.DIM, sizeof(float));
+double *energyDensity = NULL;
+energyDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the baryon density
-float *baryonDensity = NULL;
-if(params.BARYON) baryonDensity = (float *)calloc(params.DIM, sizeof(float));
+double *baryonDensity = NULL;
+if(params.BARYON) baryonDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the flow velocity
-float **flowVelocity = NULL;
+double **flowVelocity = NULL;
 flowVelocity = calloc2dArray(flowVelocity, 4, params.DIM);
 
 //the pressure
-float *pressure = NULL;
-pressure = (float *)calloc(params.DIM, sizeof(float));
+double *pressure = NULL;
+pressure = (double *)calloc(params.DIM, sizeof(double));
 
 //the bulk pressure Pi
-float *bulkPressure = NULL;
-bulkPressure = (float *)calloc(params.DIM, sizeof(float));
+double *bulkPressure = NULL;
+bulkPressure = (double *)calloc(params.DIM, sizeof(double));
 
 //the shear stress tensor
-float **shearTensor = NULL;
+double **shearTensor = NULL;
 shearTensor = calloc2dArray(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
 
 //the baryon diffusion current vector
-float **baryonDiffusion = NULL;
+double **baryonDiffusion = NULL;
 if(params.BARYON) baryonDiffusion = calloc2dArray(baryonDiffusion, 4, params.DIM);
 
 //solve the eigenvalue problem for the energy density and flow velocity

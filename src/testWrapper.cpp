@@ -7,25 +7,25 @@ int main(void)
 
   //try to initialize the energy density from a vector of DIMX * DIMY * DIMETA elements
   int npoints = 101 * 101;
-  size_t size = npoints * sizeof(float);
-  std::vector<float> init_e(size); //initial energy density vector
-  std::vector<float> final_e(size); //final energy density vector
-  std::vector<float> final_p(size); //final pressure vector
-  std::vector<float> final_ut(size); // etc...
-  std::vector<float> final_ux(size);
-  std::vector<float> final_uy(size);
-  std::vector<float> final_un(size);
-  std::vector<float> final_pitt(size);
-  std::vector<float> final_pitx(size);
-  std::vector<float> final_pity(size);
-  std::vector<float> final_pitn(size);
-  std::vector<float> final_pixx(size);
-  std::vector<float> final_pixy(size);
-  std::vector<float> final_pixn(size);
-  std::vector<float> final_piyy(size);
-  std::vector<float> final_piyn(size);
-  std::vector<float> final_pinn(size);
-  std::vector<float> final_Pi(size);
+  size_t size = npoints * sizeof(double);
+  std::vector<double> init_e(size); //initial energy density vector
+  std::vector<double> final_e(size); //final energy density vector
+  std::vector<double> final_p(size); //final pressure vector
+  std::vector<double> final_ut(size); // etc...
+  std::vector<double> final_ux(size);
+  std::vector<double> final_uy(size);
+  std::vector<double> final_un(size);
+  std::vector<double> final_pitt(size);
+  std::vector<double> final_pitx(size);
+  std::vector<double> final_pity(size);
+  std::vector<double> final_pitn(size);
+  std::vector<double> final_pixx(size);
+  std::vector<double> final_pixy(size);
+  std::vector<double> final_pixn(size);
+  std::vector<double> final_piyy(size);
+  std::vector<double> final_piyn(size);
+  std::vector<double> final_pinn(size);
+  std::vector<double> final_Pi(size);
 
   //this step would be handled by another module... e.g. TRENTO
   for (int i = 0; i < npoints; i++) init_e[i] = 1.0; //initialize to nontrivial values

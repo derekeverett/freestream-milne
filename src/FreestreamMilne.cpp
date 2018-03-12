@@ -38,8 +38,8 @@ class FREESTREAMMILNE {
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
-    void initialize_from_vector(std::vector<float>);
-    std::vector<float> init_energy_density;
+    void initialize_from_vector(std::vector<double>);
+    std::vector<double> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
     void output_to_vectors(std::vector<double>&, //e
@@ -88,7 +88,7 @@ FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
 //use this function to initialize energy density within JETSCAPE
-void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
+void FREESTREAMMILNE::initialize_from_vector(std::vector<double> energy_density_in) {
   init_energy_density = energy_density_in;
 }
 
@@ -178,26 +178,26 @@ if(PRINT_SCREEN)
 //allocate and initialize memory
 if (PRINT_SCREEN) printf("Allocating memory\n");
 /*
-float ***eqnOfStateTable;
+double ***eqnOfStateTable;
 if(params.EOS_TYPE == 3)
 { //table is regularly spaced in mu_B and T, with 450 values each
   eqnOfStateTable = calloc2dArray(eqnOfStateTable, 450, 450);
 }
 */
 //the initial energy density spatial profile
-float *initialEnergyDensity = NULL;
-initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+double *initialEnergyDensity = NULL;
+initialEnergyDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the initial baryon density spatial profile
-float *initialChargeDensity = NULL;
-if(params.BARYON) initialChargeDensity = (float *)calloc(params.DIM, sizeof(float));
+double *initialChargeDensity = NULL;
+if(params.BARYON) initialChargeDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the initial density G(tilde)^(tau,tau) at time tau_0
-float **density = NULL;
+double **density = NULL;
 density = calloc2dArray(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
 //the initial density J(tilde)^(tau) at time tau_0
-float **chargeDensity = NULL;
+double **chargeDensity = NULL;
 if(params.BARYON) chargeDensity = calloc2dArray(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
 //initialize energy density
@@ -278,11 +278,11 @@ if (params.BARYON) convertInitialChargeDensity(initialChargeDensity, chargeDensi
 if (params.BARYON) free(initialChargeDensity);
 
 //the shifted energy density profile G^(tau,tau) at time tau
-float ***shiftedDensity = NULL;
+double ***shiftedDensity = NULL;
 shiftedDensity = calloc3dArray(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
 //the shifted baryon density profile J^(tau) at time tau
-float ***shiftedChargeDensity = NULL;
+double ***shiftedChargeDensity = NULL;
 if(params.BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
 //perform the free streaming time-update step and free up memory
@@ -316,16 +316,16 @@ if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
 if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
 
 //the ten independent components of the stress tensor
-float **stressTensor = NULL;
+double **stressTensor = NULL;
 stressTensor = calloc2dArray(stressTensor, 10, params.DIM);
 
 //the four independent components of baryon current four-vector
-float **baryonCurrent = NULL;
+double **baryonCurrent = NULL;
 if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
 
 //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
 //hypertrig table depends on TAU, so need to keep this inside loop
-float ****hypertrigTable = NULL;
+double ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
 if (PRINT_SCREEN) printf("calculating hypertrig table\n");
@@ -370,31 +370,31 @@ free4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
 
 //variables to store the hydrodynamic variables after the Landau matching is performed
 //the energy density
-float *energyDensity = NULL;
-energyDensity = (float *)calloc(params.DIM, sizeof(float));
+double *energyDensity = NULL;
+energyDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the baryon density
-float *baryonDensity = NULL;
-if(params.BARYON) baryonDensity = (float *)calloc(params.DIM, sizeof(float));
+double *baryonDensity = NULL;
+if(params.BARYON) baryonDensity = (double *)calloc(params.DIM, sizeof(double));
 
 //the flow velocity
-float **flowVelocity = NULL;
+double **flowVelocity = NULL;
 flowVelocity = calloc2dArray(flowVelocity, 4, params.DIM);
 
 //the pressure
-float *pressure = NULL;
-pressure = (float *)calloc(params.DIM, sizeof(float));
+double *pressure = NULL;
+pressure = (double *)calloc(params.DIM, sizeof(double));
 
 //the bulk pressure Pi
-float *bulkPressure = NULL;
-bulkPressure = (float *)calloc(params.DIM, sizeof(float));
+double *bulkPressure = NULL;
+bulkPressure = (double *)calloc(params.DIM, sizeof(double));
 
 //the shear stress tensor
-float **shearTensor = NULL;
+double **shearTensor = NULL;
 shearTensor = calloc2dArray(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
 
 //the baryon diffusion current vector
-float **baryonDiffusion = NULL;
+double **baryonDiffusion = NULL;
 if(params.BARYON) baryonDiffusion = calloc2dArray(baryonDiffusion, 4, params.DIM);
 
 //solve the eigenvalue problem for the energy density and flow velocity
@@ -513,23 +513,23 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 {
   for (int is = 0; is < params.DIM; is++)
   {
-    final_energy_density[is] = (double)energyDensity[is];
-    final_pressure[is] = (double)pressure[is];
-    final_ut[is] = (double)flowVelocity[0][is];
-    final_ux[is] = (double)flowVelocity[1][is];
-    final_uy[is] = (double)flowVelocity[2][is];
-    final_un[is] = (double)flowVelocity[3][is];
-    final_pitt[is] = (double)shearTensor[0][is];
-    final_pitx[is] = (double)shearTensor[1][is];
-    final_pity[is] = (double)shearTensor[2][is];
-    final_pitn[is] = (double)shearTensor[3][is];
-    final_pixx[is] = (double)shearTensor[4][is];
-    final_pixy[is] = (double)shearTensor[5][is];
-    final_pixn[is] = (double)shearTensor[6][is];
-    final_piyy[is] = (double)shearTensor[7][is];
-    final_piyn[is] = (double)shearTensor[8][is];
-    final_pinn[is] = (double)shearTensor[9][is];
-    final_Pi[is] = (double)bulkPressure[is];
+    final_energy_density[is] = energyDensity[is];
+    final_pressure[is] = pressure[is];
+    final_ut[is] = flowVelocity[0][is];
+    final_ux[is] = flowVelocity[1][is];
+    final_uy[is] = flowVelocity[2][is];
+    final_un[is] = flowVelocity[3][is];
+    final_pitt[is] = shearTensor[0][is];
+    final_pitx[is] = shearTensor[1][is];
+    final_pity[is] = shearTensor[2][is];
+    final_pitn[is] = shearTensor[3][is];
+    final_pixx[is] = shearTensor[4][is];
+    final_pixy[is] = shearTensor[5][is];
+    final_pixn[is] = shearTensor[6][is];
+    final_piyy[is] = shearTensor[7][is];
+    final_piyn[is] = shearTensor[8][is];
+    final_pinn[is] = shearTensor[9][is];
+    final_Pi[is] = bulkPressure[is];
   }
 }
 
