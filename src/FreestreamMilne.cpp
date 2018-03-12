@@ -22,6 +22,7 @@
 
 #define PI 3.141592654f
 #define PRINT_SCREEN 1 //turn on for program info to print to terminal
+#define HBARC 0.197326938f
 
 using namespace std;
 
@@ -38,10 +39,13 @@ class FREESTREAMMILNE {
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
+    //note units of argument should be GeV / fm^3
+    //then we convert to fm^(-4)
     void initialize_from_vector(std::vector<float>);
     std::vector<float> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
+    //note we need to convert back to GeV / fm^3 units here
     void output_to_vectors(std::vector<double>&, //e
                             std::vector<double>&, //p
                             std::vector<double>&, //ut
@@ -226,9 +230,10 @@ else if (params.IC_ENERGY == 5)
 {
   //read in initial energy density using the initiliaze_from_vector() function
   //note that this is not safe - if one passes an empty vector it will not throw an error
+  //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / HBARC;
 }
 else
 {
@@ -513,23 +518,24 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 {
   for (int is = 0; is < params.DIM; is++)
   {
-    final_energy_density[is] = (double)energyDensity[is];
-    final_pressure[is] = (double)pressure[is];
+    //converting back to GeV / fm^3 for use in JETSCAPE
+    final_energy_density[is] = (double)energyDensity[is] * HBARC;
+    final_pressure[is] = (double)pressure[is] * HBARC;
     final_ut[is] = (double)flowVelocity[0][is];
     final_ux[is] = (double)flowVelocity[1][is];
     final_uy[is] = (double)flowVelocity[2][is];
     final_un[is] = (double)flowVelocity[3][is];
-    final_pitt[is] = (double)shearTensor[0][is];
-    final_pitx[is] = (double)shearTensor[1][is];
-    final_pity[is] = (double)shearTensor[2][is];
-    final_pitn[is] = (double)shearTensor[3][is];
-    final_pixx[is] = (double)shearTensor[4][is];
-    final_pixy[is] = (double)shearTensor[5][is];
-    final_pixn[is] = (double)shearTensor[6][is];
-    final_piyy[is] = (double)shearTensor[7][is];
-    final_piyn[is] = (double)shearTensor[8][is];
-    final_pinn[is] = (double)shearTensor[9][is];
-    final_Pi[is] = (double)bulkPressure[is];
+    final_pitt[is] = (double)shearTensor[0][is] * HBARC;
+    final_pitx[is] = (double)shearTensor[1][is] * HBARC;
+    final_pity[is] = (double)shearTensor[2][is] * HBARC;
+    final_pitn[is] = (double)shearTensor[3][is] * HBARC;
+    final_pixx[is] = (double)shearTensor[4][is] * HBARC;
+    final_pixy[is] = (double)shearTensor[5][is] * HBARC;
+    final_pixn[is] = (double)shearTensor[6][is] * HBARC;
+    final_piyy[is] = (double)shearTensor[7][is] * HBARC;
+    final_piyn[is] = (double)shearTensor[8][is] * HBARC;
+    final_pinn[is] = (double)shearTensor[9][is] * HBARC;
+    final_Pi[is] = (double)bulkPressure[is] * HBARC;
   }
 }
 
