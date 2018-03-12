@@ -38,8 +38,8 @@ class FREESTREAMMILNE {
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
-    void initialize_from_vector(std::vector<double>);
-    std::vector<double> init_energy_density;
+    void initialize_from_vector(std::vector<float>);
+    std::vector<float> init_energy_density;
 
     //support to write final hydro variables to vectors - useful for JETSCAPE
     void output_to_vectors(std::vector<double>&, //e
@@ -88,7 +88,7 @@ FREESTREAMMILNE::~FREESTREAMMILNE() {
 }
 
 //use this function to initialize energy density within JETSCAPE
-void FREESTREAMMILNE::initialize_from_vector(std::vector<double> energy_density_in) {
+void FREESTREAMMILNE::initialize_from_vector(std::vector<float> energy_density_in) {
   init_energy_density = energy_density_in;
 }
 
@@ -228,7 +228,7 @@ else if (params.IC_ENERGY == 5)
   //note that this is not safe - if one passes an empty vector it will not throw an error
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = (float)init_energy_density[i];
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
 else
 {
