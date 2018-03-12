@@ -23,7 +23,7 @@
 #define PI 3.141592654f
 #define PRINT_SCREEN 1 //turn on for program info to print to terminal
 //#define HBARC 0.197326938f
-#define HBARC 0.197326938 //used to convert units of input / output hydro vectors 
+#define HBARC 0.197326938 //used to convert units of input / output hydro vectors
 
 using namespace std;
 
@@ -234,7 +234,9 @@ else if (params.IC_ENERGY == 5)
   //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / HBARC;
+  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / HBARC;
+  //just doing this here for testing - try increasing normalization of initial distribution to improve stability
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
 else
 {
