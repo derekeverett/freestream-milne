@@ -49,7 +49,8 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
         //can these trig and hypertrig functions be tabulated ahead of time?
-        float eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap;
+        //check these for correctness
+        float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
         float x_new = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         float y_new = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
 
