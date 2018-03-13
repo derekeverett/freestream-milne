@@ -234,9 +234,9 @@ else if (params.IC_ENERGY == 5)
   //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / HBARC;
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / (float)HBARC;
   //just doing this here for testing - try increasing normalization of initial distribution to improve stability
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
+  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
 else
 {
