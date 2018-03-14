@@ -20,8 +20,8 @@ set (SOURCES
   )
 
 add_library(freestream_lib SHARED ${SOURCES})
-add_executable(freestream.e ${SOURCES})
+#add_executable(freestream.e ${SOURCES})
 target_link_libraries (freestream_lib ${LIBS})
-target_link_libraries (freestream.e ${LIBS})
+#target_link_libraries (freestream.e ${LIBS})
 
-install(TARGETS freestream.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+#install(TARGETS freestream.e DESTINATION ${CMAKE_HOME_DIRECTORY})
