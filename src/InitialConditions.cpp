@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <fstream>
+#include <string>
 #include "Parameter.h"
 #define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
 
@@ -156,7 +157,62 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
   {
     printf("Could not find initial profile in initial_superMC_ed!");
   }
-  
+
+  superMCFile.close();
+
+  //now multiply by an eta-dependent profile; etaWidth is the width of the eta profile
+  for (int is = 0; is < DIM; is++)
+  {
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+    //here we use a the same profile as GPU-VH (see arXiv:1608.06577v1 p. 38)
+    float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
+    arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
+    density[is] = density[is] * exp(arg);
+  }
+}
+
+void readEnergyDensityTRENTOBlock(float *density, parameters params)
+{
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float ETA_WIDTH = params.ETA_WIDTH;
+  float ETA_FLAT = params.ETA_FLAT;
+  float DETA = params.DETA;
+
+  //first read in the transverse profile from superMC block data format
+  float temp = 0.0;
+  std::ifstream superMCFile;
+  superMCFile.open("initial_profiles/e.dat");
+  if (superMCFile.is_open())
+  {
+    //skip the eight line (l) header
+    std::string line;
+    for (int l = 0; l < 8; l++) getline(superMCFile, line);
+    for (int ix = 0; ix < DIM_X; ix++)
+    {
+      for (int iy = 0; iy < DIM_Y; iy++)
+      {
+        superMCFile >> temp;
+        for (int ieta = 0; ieta < DIM_ETA; ieta++) //copy the same value for all eta, then we will multiply by eta dependent function
+        {
+          int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
+          density[is] = temp;
+        }
+      }
+    }
+  }
+
+  else
+  {
+    printf("Could not find initial profile in initial_profiles!");
+  }
+
   superMCFile.close();
 
   //now multiply by an eta-dependent profile; etaWidth is the width of the eta profile

@@ -116,6 +116,12 @@ int main(void)
     //read in initial energy density within JETSCAPE framework
     if(PRINT_SCREEN) printf("Reading energy density from JETSCAPE pointer\n");
   }
+  else if (params.IC_ENERGY == 6)
+  {
+    //read in initial energy density within JETSCAPE framework
+    readEnergyDensityTRENTOBlock(initialEnergyDensity, params);
+    if(PRINT_SCREEN) printf("Reading energy density from TRENTO block profile in initial_profiles/\n");
+  }
   else
   {
     printf("Not a valid initial Condition... Goodbye\n");
