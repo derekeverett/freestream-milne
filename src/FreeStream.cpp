@@ -101,7 +101,9 @@ void convertInitialDensity(float *initialEnergyDensity, float **density, paramet
 
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
-        density[is][irap] = initialEnergyDensity[is] * (TAU0 / (2.0 * PI)); //this is initial F^(tau,tau) in the notation of (PRC 91, 064906)
+        //density[is][irap] = initialEnergyDensity[is] * (TAU0 / (2.0 * PI)); //this is initial F^(tau,tau) in the notation of (PRC 91, 064906)
+        density[is][irap] = initialEnergyDensity[is] / (2.0 * PI); //this is initial F^(tau,tau) in the notation of (PRC 91, 064906)
+
       }
     }
   }
