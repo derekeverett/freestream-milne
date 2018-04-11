@@ -22,7 +22,7 @@ struct parameters
   float TAU0;
   int EOS_TYPE;
 
-  //these are computed based on the chosen parameters above; they are constrained 
+  //these are computed based on the chosen parameters above; they are constrained
   int DIM;
   float TAU;
 };

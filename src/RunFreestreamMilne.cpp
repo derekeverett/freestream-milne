@@ -60,9 +60,11 @@ int main(void)
       printf("Parameters are ...\n");
       printf("(DIM_X, DIM_Y, DIM_ETA) = (%d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA);
       printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", params.DX, params.DY, params.DETA, params.DTAU);
+      if (REGULATE) printf("Regulating flow velocity in dilute region for smoothness\n");
       if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
       else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
       else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
+
     }
   //allocate and initialize memory
   if (PRINT_SCREEN) printf("Allocating memory\n");
@@ -74,8 +76,11 @@ int main(void)
   }
   */
   //the initial energy density spatial profile
+
+
   float *initialEnergyDensity = NULL;
   initialEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
+  //initialEnergyDensity = (float *)malloc(params.DIM * sizeof(float));
 
   //the initial baryon density spatial profile
   float *initialChargeDensity = NULL;
@@ -93,12 +98,12 @@ int main(void)
   if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 4.0, 4.0, 5.0, params);
+    initializeEllipticalGauss(initialEnergyDensity, 10.0, 10.0, 3.0, params);
     if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
   {
-    initializeEllipticalMCGauss(initialEnergyDensity, 2.0, 3.0, 1.0, params);
+    initializeEllipticalMCGauss(initialEnergyDensity, 10.0, 10.0, 3.0, params);
     if(PRINT_SCREEN) printf("Fluctuating Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 3)
@@ -121,6 +126,11 @@ int main(void)
     //read in initial energy density within JETSCAPE framework
     readEnergyDensityTRENTOBlock(initialEnergyDensity, params);
     if(PRINT_SCREEN) printf("Reading energy density from TRENTO block profile in initial_profiles/\n");
+  }
+  else if (params.IC_ENERGY == 7)
+  {
+    initialize2Gaussians(initialEnergyDensity, 3.0, 3.0, 5.0, params);
+    if(PRINT_SCREEN) printf("Two Oblate Gaussians \n");
   }
   else
   {
@@ -172,6 +182,16 @@ int main(void)
     writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
   }
   /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
+
+  //test regulating the initial profile in dilute regions
+  /*
+  for (int is = 0; is < params.DIM; is++)
+    {
+      if ( initialEnergyDensity[is] < 1.0e-10 ) initialEnergyDensity[is] = 0.0;
+    }
+  */
+  //test regulating initial profile in dilute regions
+
 
   //convert the energy density profile into the initial density profile to be streamed and free memory
   convertInitialDensity(initialEnergyDensity, density, params);

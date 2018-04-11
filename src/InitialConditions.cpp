@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include "Parameter.h"
-#define THETA_FUNCTION(X) ((double)X < (double)0 ? (double)0 : (double)1)
+#define THETA_FUNCTION(X) ((float)X < (float)0 ? (float)0 : (float)1)
 
 void initializeZero(float *density, parameters params)
 {
@@ -227,5 +227,40 @@ void readEnergyDensityTRENTOBlock(float *density, parameters params)
     float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
     arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
     density[is] = density[is] * exp(arg);
+  }
+}
+
+void initialize2Gaussians(float *density, float bx, float by, float beta, parameters params) // bx is the x variance etc...
+{
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+  float DY = params.DY;
+  float DETA = params.DETA;
+
+  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+
+  for (int is = 0; is < DIM; is++)
+  {
+    int ix = is / (DIM_Y * DIM_ETA);
+    int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+    int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+    //does it work for even number of points?
+    float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
+    float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
+    float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
+
+    float x1 = 3.0;
+    float y1 = 0.0;
+    float eta1 = 0.0;
+
+    float x2 = -3.0;
+    float y2 = 0.0;
+    float eta2 = 0.0;
+    density[is] = e0 * (exp(-(1.0 / bx) * ((x-x1) * (x-x1))) * exp(-(1.0 / by) * ((y-y1) * (y-y1))) * exp(-(1.0 / beta) * ((eta-eta1) * (eta-eta1)))
+      + exp(-(1.0 / bx) * ((x-x2) * (x-x2))) * exp(-(1.0 / by) * ((y-y2) * (y-y2))) * exp(-(1.0 / beta) * ((eta-eta2) * (eta-eta2))) );
   }
 }

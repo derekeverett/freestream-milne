@@ -51,6 +51,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         //can these trig and hypertrig functions be tabulated ahead of time?
         //check these for correctness
         float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
+        //float eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula (before typo found)
         float x_new = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         float y_new = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
 
@@ -121,7 +122,7 @@ void convertInitialDensity(float *initialEnergyDensity, float **density, paramet
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
         float rap = (float)irap * DRAP + rapmin;
-        float rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp((-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA));
+        float rap_factor = cosh(eta - rap) * cosh(eta - rap) * exp( (-1.0) * (eta - rap) * (eta - rap) / (SIGMA * SIGMA) );
         density[is][irap] = initialEnergyDensity[is] * norm_factor * rap_factor; //this is initial G^(tau,tau)
       }
     }
