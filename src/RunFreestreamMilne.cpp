@@ -123,14 +123,18 @@ int main(void)
   }
   else if (params.IC_ENERGY == 6)
   {
-    //read in initial energy density within JETSCAPE framework
     readEnergyDensityTRENTOBlock(initialEnergyDensity, params);
-    if(PRINT_SCREEN) printf("Reading energy density from TRENTO block profile in initial_profiles/\n");
+    if(PRINT_SCREEN) printf("Reading energy density from 2D TRENTO block profile in initial_profiles/\n");
   }
   else if (params.IC_ENERGY == 7)
   {
     initialize2Gaussians(initialEnergyDensity, 3.0, 3.0, 5.0, params);
     if(PRINT_SCREEN) printf("Two Oblate Gaussians \n");
+  }
+  else if (params.IC_ENERGY == 8)
+  {
+    readEnergyDensityTRENTO3DBlock(initialEnergyDensity, params);
+    if(PRINT_SCREEN) printf("Reading energy density from 3D TRENTO block profile in initial_profiles/\n");
   }
   else
   {

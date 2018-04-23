@@ -264,3 +264,43 @@ void initialize2Gaussians(float *density, float bx, float by, float beta, parame
       + exp(-(1.0 / bx) * ((x-x2) * (x-x2))) * exp(-(1.0 / by) * ((y-y2) * (y-y2))) * exp(-(1.0 / beta) * ((eta-eta2) * (eta-eta2))) );
   }
 }
+
+void readEnergyDensityTRENTO3DBlock(float *density, parameters params)
+{
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float ETA_WIDTH = params.ETA_WIDTH;
+  float ETA_FLAT = params.ETA_FLAT;
+  float DETA = params.DETA;
+
+  //first read in the transverse profile from superMC block data format
+  float temp = 0.0;
+  std::ifstream superMCFile;
+  superMCFile.open("initial_profiles/e.dat");
+  if (superMCFile.is_open())
+  {
+    //skip the eight line (l) header
+    std::string line;
+    for (int l = 0; l < 8; l++) getline(superMCFile, line);
+    for (int ix = 0; ix < DIM_X; ix++)
+    {
+      for (int iy = 0; iy < DIM_Y; iy++)
+      {
+        for (int ieta = 0; ieta < DIM_ETA; ieta++)
+        {
+          int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
+          superMCFile >> temp;
+          density[is] = temp;
+        }
+      }
+    }
+  }
+
+  else
+  {
+    printf("Could not find initial profile in initial_profiles!");
+  }
+  superMCFile.close();
+}
