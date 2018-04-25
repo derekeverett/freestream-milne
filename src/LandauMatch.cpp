@@ -24,7 +24,7 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int irap = 0; irap < DIM_RAP; irap++)
   {
     float rap = (float)irap * DRAP + rapmin;
@@ -68,7 +68,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 
   for (int ivar = 0; ivar < 10; ivar++)
   {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       int ix = is / (DIM_Y * DIM_ETA);
@@ -105,7 +105,7 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
 
   for (int ivar = 0; ivar < 4; ivar++)
   {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int is = 0; is < DIM; is++) //the column packed index for x, y and z
     {
       int ix = is / (DIM_Y * DIM_ETA);
@@ -139,7 +139,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
   float tolerance = 1.0e-3; //set energy density to tolerance if it is less than tolerance and if REGULATE is true
 
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     gsl_matrix *Tmunu; //T^(mu,nu) with two contravariant indices; we need to lower an index
@@ -337,7 +337,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   if (REGULATE)
   {
     printf("Regulating flow velocity profile in dilute regions \n");
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int is = 0; is < DIM; is++)
     {
       int ix = is / (DIM_Y * DIM_ETA);
@@ -367,7 +367,7 @@ void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pr
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // PI = -1/3 * (T^(mu)_(mu) - epsilon) - p
@@ -380,7 +380,7 @@ void calculateShearViscTensor(float **stressTensor, float *energyDensity, float 
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     // pi^(mu,nu) = T^(mu,nu) - epsilon * u^(mu)u^(nu) + (P + PI) * (g^(mu,nu) - u^(mu)u^(nu))
@@ -405,7 +405,7 @@ void calculateBaryonDensity(float *baryonDensity, float **baryonCurrent, float *
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for
+  #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
     baryonDensity[is] = (flowVelocity[0][is] * baryonCurrent[0][is]) - (flowVelocity[1][is] * baryonCurrent[1][is]) - (flowVelocity[2][is] * baryonCurrent[2][is]) - (TAU * TAU * flowVelocity[3][is] * baryonCurrent[3][is]);
@@ -417,7 +417,7 @@ void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, fl
   int DIM = params.DIM;
   for (int ivar = 0; ivar < 4; ivar++)
   {
-    #pragma omp parallel for
+    #pragma omp parallel for simd
     for (int is = 0; is < DIM; is++)
     {
       baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);

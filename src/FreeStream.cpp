@@ -29,8 +29,8 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
-  #pragma omp parallel for
-  #pragma acc parallel loop
+  #pragma omp parallel for simd
+  //#pragma acc parallel loop
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);
