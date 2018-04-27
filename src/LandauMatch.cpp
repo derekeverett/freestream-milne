@@ -10,7 +10,7 @@
 //#include <math.h>
 #include "Parameter.h"
 #define PI 3.141592654f
-#define REGULATE 1 // 1 to regulate flow in dilute regions
+#define REGULATE 0 // 1 to regulate flow in dilute regions
 #define GAMMA_MAX 10.0
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)

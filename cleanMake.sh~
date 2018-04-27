@@ -1,0 +1,9 @@
+#export OMP_NUM_THREADS=10 #set this to the number of threads on CPU
+#set OMP_NUM_THREADS 10
+rm RunFreestreamMilne
+rm -R output
+mkdir output
+cp parameters.dat output/parameters.dat
+#make clean
+make
+#./RunFreestreamMilne

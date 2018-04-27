@@ -5,6 +5,7 @@
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"
 #include "EquationOfState.cpp"
+#include "HydroValidity.cpp"
 #include "Memory.cpp"
 #include "FileIO.cpp"
 #include <stdlib.h>
@@ -365,6 +366,21 @@ int main(void)
     writeScalarToFileProjection(scaledEnergyDensity, "tau_interpolated_e_projection", params);
   }
   /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
+
+
+  //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
+  //bulk inv reynolds #
+  float *R_Pi_Inv = NULL;
+  R_Pi_Inv = (float *)calloc(params.DIM, sizeof(float));
+  //shear inv reynolds #
+  float *R_pimunu_Inv = NULL;
+  R_pimunu_Inv = (float *)calloc(params.DIM, sizeof(float));
+  calculateBulkInvReynolds(pressure, bulkPressure, R_Pi_Inv, params);
+  calculateShearInvReynolds(energyDensity, pressure, shearTensor, R_pimunu_Inv, params);
+  writeScalarToFileProjection(R_Pi_Inv, "R_Pi_Inv_projection", params);
+  writeScalarToFileProjection(R_pimunu_Inv, "R_pimunu_Inv_projection", params);
+  //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
+
 
   if (PRINT_SCREEN) printf("writing hydro variables to file\n");
 
