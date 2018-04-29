@@ -193,7 +193,7 @@ void readEnergyDensityTRENTOBlock(float *density, parameters params)
   {
     //skip the eight line (l) header
     std::string line;
-    for (int l = 0; l < 8; l++) getline(superMCFile, line);
+    for (int l = 0; l < 12; l++) getline(superMCFile, line);
     for (int ix = 0; ix < DIM_X; ix++)
     {
       for (int iy = 0; iy < DIM_Y; iy++)

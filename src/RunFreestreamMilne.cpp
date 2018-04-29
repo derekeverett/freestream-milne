@@ -56,6 +56,10 @@ int main(void)
   params.DIM = params.DIM_X * params.DIM_Y * params.DIM_ETA;
   params.TAU = params.TAU0 + params.DTAU;
 
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+
   if(PRINT_SCREEN)
     {
       printf("Parameters are ...\n");
@@ -379,6 +383,9 @@ int main(void)
   calculateShearInvReynolds(energyDensity, pressure, shearTensor, R_pimunu_Inv, params);
   writeScalarToFileProjection(R_Pi_Inv, "R_Pi_Inv_projection", params);
   writeScalarToFileProjection(R_pimunu_Inv, "R_pimunu_Inv_projection", params);
+  int ctr = (DIM_Y * DIM_ETA * ((DIM_X - 1) / 2)) + (DIM_ETA * ((DIM_Y - 1) / 2)) + ((DIM_ETA - 1) / 2);
+  printf("R_Pi_Inv at center : %f \n", R_Pi_Inv[ctr]);
+  printf("R_pimunu_Inv at center : %f \n", R_pimunu_Inv[ctr]);
   //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 
 
