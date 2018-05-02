@@ -50,8 +50,8 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
 
         //can these trig and hypertrig functions be tabulated ahead of time?
         //check these for correctness
-        float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
-        //float eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula (before typo found)
+        //float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
+        float eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula works 
         float x_new = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         float y_new = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
 

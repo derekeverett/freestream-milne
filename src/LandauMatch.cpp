@@ -40,12 +40,12 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
         hypertrigTable[0][irap][iphip][ieta] = 1.0; //p^tau, p^tau component
         hypertrigTable[1][irap][iphip][ieta] = cos(phip) / cosh(rap - eta); //p^tau, p^x
         hypertrigTable[2][irap][iphip][ieta] = sin(phip) / cosh(rap - eta); //p^tau, p^y
-        hypertrigTable[3][irap][iphip][ieta] = (-1.0 / TAU) * tanh(rap - eta); //p^tau, p^eta
+        hypertrigTable[3][irap][iphip][ieta] = (1.0 / TAU) * tanh(rap - eta); //p^tau, p^eta
         hypertrigTable[4][irap][iphip][ieta] = (cos(phip) * cos(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^x
         hypertrigTable[5][irap][iphip][ieta] = (cos(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^y
-        hypertrigTable[6][irap][iphip][ieta] = (-1.0 / TAU) * (cos(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^x, p^eta
+        hypertrigTable[6][irap][iphip][ieta] = (1.0 / TAU) * (cos(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^x, p^eta
         hypertrigTable[7][irap][iphip][ieta] = (sin(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^y, p^y
-        hypertrigTable[8][irap][iphip][ieta] = (-1.0 / TAU) * (sin(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^y, p^eta
+        hypertrigTable[8][irap][iphip][ieta] = (1.0 / TAU) * (sin(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^y, p^eta
         hypertrigTable[9][irap][iphip][ieta] = (1.0 / (TAU * TAU)) * tanh(rap - eta) * tanh(rap - eta); //p^eta, p^eta
       }
     }
