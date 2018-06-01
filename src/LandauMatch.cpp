@@ -10,7 +10,7 @@
 //#include <math.h>
 #include "Parameter.h"
 #define PI 3.141592654f
-#define REGULATE 1 // 1 to regulate flow in dilute regions
+#define REGULATE 0 // 1 to regulate flow in dilute regions
 #define GAMMA_MAX 10.0
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
@@ -27,7 +27,7 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
   #pragma omp parallel for simd
   for (int irap = 0; irap < DIM_RAP; irap++)
   {
-    float rap = (float)irap * DRAP + rapmin;
+    //float rap = (float)irap * DRAP + rapmin;
 
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
     {
@@ -36,6 +36,13 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
       for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
         float eta = (float)ieta * DETA  + etamin;
+
+        //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
+        float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
+        float rap = eta + tan((PI / 2.0) * w );
+
+        //try evaluating at values of rapidity y centered around y ~= eta
+        //if (DIM_ETA > 1) rap = rap + eta;
 
         hypertrigTable[0][irap][iphip][ieta] = 1.0; //p^tau, p^tau component
         hypertrigTable[1][irap][iphip][ieta] = cos(phip) / cosh(rap - eta); //p^tau, p^x
@@ -60,9 +67,10 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
   int DIM_RAP = params.DIM_RAP;
   int DIM_PHIP = params.DIM_PHIP;
   int DIM = params.DIM;
-  float DRAP = params.DRAP;
+  //float DRAP = params.DRAP;
   float TAU = params.TAU;
   //float TAU = params.TAU;
+  float weight_rap;
 
   float d_phip = (2.0 * PI) / float(DIM_PHIP);
 
@@ -77,16 +85,25 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
+        //try trapezoid rule for rapidity integral
+        //if (irap == 0 || irap == DIM_RAP - 1) weight_rap = DRAP / 2.0;
+        //else weight_rap = DRAP;
+
+        //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
+        float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
+        float jacobian = (PI/2.0) / cos( (PI/2.0)*w ) / cos( (PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
+
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
-          //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
+          //check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
           //#pragma omp simd (+:stressTensor_tmp)
-          stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          if (DIM_ETA == 1) stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
         }
       }
       if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
-      else stressTensor[ivar][is] = stressTensor[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
+      else stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //multiply by common differential factor once
     }
   }
 }
