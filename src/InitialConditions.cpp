@@ -194,9 +194,9 @@ void readEnergyDensityTRENTOBlock(float *density, parameters params)
     //skip the eight line (l) header
     std::string line;
     for (int l = 0; l < 12; l++) getline(superMCFile, line);
-    for (int ix = 0; ix < DIM_X; ix++)
+    for (int iy = 0; iy < DIM_Y; iy++)
     {
-      for (int iy = 0; iy < DIM_Y; iy++)
+      for (int ix = 0; ix < DIM_X; ix++)
       {
         superMCFile >> temp;
         for (int ieta = 0; ieta < DIM_ETA; ieta++) //copy the same value for all eta, then we will multiply by eta dependent function

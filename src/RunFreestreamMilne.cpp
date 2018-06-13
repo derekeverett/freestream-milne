@@ -103,7 +103,7 @@ int main(void)
   if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
   if (params.IC_ENERGY == 1)
   {
-    initializeEllipticalGauss(initialEnergyDensity, 10.0, 10.0, 3.0, params);
+    initializeEllipticalGauss(initialEnergyDensity, 8.0, 8.0, 8.0, params);
     if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_ENERGY == 2)
@@ -192,14 +192,14 @@ int main(void)
   }
   /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
-  //test regulating the initial profile in dilute regions
-  /*
-  for (int is = 0; is < params.DIM; is++)
-    {
-      if ( initialEnergyDensity[is] < 1.0e-10 ) initialEnergyDensity[is] = 0.0;
-    }
-  */
-  //test regulating initial profile in dilute regions
+  //calculate total energy to check convergence
+  if (params.DIM_ETA > 1)
+  {
+    float totalEnergy = 0.0;
+    for (int is = 0; is < params.DIM; is++) totalEnergy += initialEnergyDensity[is];
+    totalEnergy *= (params.TAU0 * params.DX * params.DY * params.DETA);
+    printf("Total energy before streaming : %f \n", totalEnergy);
+  }
 
 
   //convert the energy density profile into the initial density profile to be streamed and free memory
@@ -371,6 +371,14 @@ int main(void)
   }
   /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
+  //calculate total energy to check convergence
+  if (params.DIM_ETA > 1)
+  {
+    float totalEnergy = 0.0;
+    for (int is = 0; is < params.DIM; is++) totalEnergy += energyDensity[is];
+    totalEnergy *= (params.TAU * params.DX * params.DY * params.DETA);
+    printf("Total energy after streaming : %f \n", totalEnergy);
+  }
 
   //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
   //bulk inv reynolds #
