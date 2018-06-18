@@ -36,11 +36,12 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
       for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
         float eta = (float)ieta * DETA  + etamin;
+        if (DIM_ETA == 1) eta = 0.0;
 
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
         float rap = eta + tan((PI / 2.0) * w );
-
+        if (DIM_ETA == 1) rap = 0.0;
         //try evaluating at values of rapidity y centered around y ~= eta
         //if (DIM_ETA > 1) rap = rap + eta;
 
@@ -218,7 +219,9 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     {
       gsl_complex eigenvalue = gsl_vector_complex_get(eigen_values, i);
 
-      if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
+      //if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
+      //eigenvalue condition taken from JF's suggestion, test for robustness in dilute region
+      if ( GSL_REAL(eigenvalue) > 0.0 && fabs( GSL_IMAG(eigenvalue) ) < ( fabs(GSL_REAL(eigenvalue)) * 1.0e-20) ) //choose eigenvalue
       {
         gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
         gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);

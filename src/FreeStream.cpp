@@ -53,6 +53,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   //float DRAP = params.DRAP;
   float TAU0 = params.TAU0;
   float TAU = params.TAU;
+  float DTAU = params.DTAU;
 
   float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
   float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
@@ -88,18 +89,27 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         //can these trig and hypertrig functions be tabulated ahead of time?
         //check these for correctness
         //float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
-        float eta_new;
-        if (DIM_ETA == 1) eta_new = 0.0;
-        else if (DIM_ETA > 1) eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula works
-        float x_new = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
-        float y_new = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
-
+        float eta_new, x_new, y_new;
+        if (DIM_ETA == 1)
+        {
+          eta_new = 0.0;
+          x_new   = x - cos(phip) * DTAU;
+          y_new   = y - sin(phip) * DTAU;
+        }
+        else if (DIM_ETA > 1)
+        {
+          eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula works
+          x_new   = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
+          y_new   = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
+        }
         //get fractions for interpolation routine
         //right now using a linear interpolation, which is gauranteed positive definite
         //could try cubic spline interpolation?
         float ix_new = (x_new - xmin) / DX;
         float iy_new = (y_new - ymin) / DY;
-        float ieta_new = (eta_new - etamin) / DETA;
+        float ieta_new;
+        if (DIM_ETA > 1) ieta_new = (eta_new - etamin) / DETA;
+        else if (DIM_ETA == 1) ieta_new = 0;
 
         float ix_new_f = floor(ix_new);
         float iy_new_f = floor(iy_new);
