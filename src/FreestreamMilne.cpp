@@ -10,7 +10,7 @@
 #include "EquationOfState.cpp"
 #include "Memory.cpp"
 #include "FileIO.cpp"
-#include "WriteHistory.cpp"
+//#include "WriteHistory.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -438,7 +438,7 @@ calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bu
 
 
 //write the next entry in hdf5 spacetime evolution file
-WriteHistoryJETSCAPE();
+//WriteHistoryJETSCAPE();
 
 ///////////  END LOOP OVER TIME STEPS HERE ////////////////////////
 if (PRINT_SCREEN) printf("writing hydro variables\n");
