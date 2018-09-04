@@ -125,6 +125,8 @@ void initializeEllipticalMCGauss(float *density, float bx, float by, float beta,
 
 void readEnergyDensitySuperMCBlock(float *density, parameters params)
 {
+  float lower_tolerance = 1.0e-3;
+
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
@@ -171,12 +173,14 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
     //here we use a the same profile as GPU-VH (see arXiv:1608.06577v1 p. 38)
     float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
     arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
-    density[is] = density[is] * exp(arg);
+    density[is] = density[is] * exp(arg) + lower_tolerance;
   }
 }
 
 void readEnergyDensityTRENTOBlock(float *density, parameters params)
 {
+  float lower_tolerance = 1.0e-3;
+  
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
@@ -226,7 +230,7 @@ void readEnergyDensityTRENTOBlock(float *density, parameters params)
     //here we use a the same profile as GPU-VH (see arXiv:1608.06577v1 p. 38)
     float arg = (-1.0) * (abs(eta) - ETA_FLAT) * (abs(eta) - ETA_FLAT) / (2.0 * ETA_WIDTH * ETA_WIDTH);
     arg = arg * THETA_FUNCTION(abs(eta) - ETA_FLAT);
-    density[is] = density[is] * exp(arg);
+    density[is] = density[is] * exp(arg) + lower_tolerance;
   }
 }
 
@@ -267,6 +271,8 @@ void initialize2Gaussians(float *density, float bx, float by, float beta, parame
 
 void readEnergyDensityTRENTO3DBlock(float *density, parameters params)
 {
+  float lower_tolerance = 1.0e-3;
+
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
@@ -292,7 +298,7 @@ void readEnergyDensityTRENTO3DBlock(float *density, parameters params)
         {
           int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
           superMCFile >> temp;
-          density[is] = temp;
+          density[is] = temp + lower_tolerance;
         }
       }
     }

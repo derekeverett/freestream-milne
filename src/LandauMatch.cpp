@@ -10,8 +10,8 @@
 //#include <math.h>
 #include "Parameter.h"
 #define PI 3.141592654f
-#define REGULATE 0 // 1 to regulate flow in dilute regions
-#define GAMMA_MAX 10.0
+#define REGULATE 0 // 1 for hard regulation of flow in dilute regions
+#define GAMMA_MAX 50.0
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
@@ -155,7 +155,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   float DETA = params.DETA;
   float TAU = params.TAU;
 
-  float tolerance = 1.0e-3; //set energy density to tolerance if it is less than tolerance and if REGULATE is true
+  float tolerance = 1.0e-5;
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -169,8 +169,12 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     eigen_vectors = gsl_matrix_complex_alloc(4,4);
     gsl_vector_complex *eigen_values;
     eigen_values = gsl_vector_complex_alloc(4);
+
     //set the values of the energy momentum tensor
-    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tau,tau
+
+    //try adding a small value everywhere to T^\tau\tau make flow velocity look nicer
+    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is] + tolerance); //tau,tau
+    //gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tau,tau
     gsl_matrix_set(Tmunu, 0, 1, stressTensor[1][is]); //tau,x
     gsl_matrix_set(Tmunu, 0, 2, stressTensor[2][is]); //tau,y
     gsl_matrix_set(Tmunu, 0, 3, stressTensor[3][is]); //tau,eta
@@ -221,7 +225,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
       //if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
       //eigenvalue condition taken from JF's suggestion, test for robustness in dilute region
-      if ( GSL_REAL(eigenvalue) > 0.0 && fabs( GSL_IMAG(eigenvalue) ) < ( fabs(GSL_REAL(eigenvalue)) * 1.0e-20) ) //choose eigenvalue
+      if ( GSL_REAL(eigenvalue) > 0.0 && fabs( GSL_IMAG(eigenvalue) ) < ( fabs(GSL_REAL(eigenvalue)) * 1.0e-10) ) //choose eigenvalue
       {
         gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
         gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);
@@ -235,7 +239,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
           if (GSL_REAL(v0) < 0) factor=-factor;
 
-          //ignore eigenvectors with gamma >~ 60
+          //ignore eigenvectors with gamma too large
           if ( (GSL_REAL(v0) * factor) < GAMMA_MAX)
           {
             eigenvalue_exists = 1;
@@ -279,7 +283,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     if (eigenvalue_exists == 0)
     {
       //in dilute regions where we can't find a timelike eigenvector, set e = 0, u^t = 1, u^x=u^y=u^n=0
-      energyDensity[is] = 0.0;
+      energyDensity[is] = 1.0e-3;
       flowVelocity[0][is] = 1.0;
       flowVelocity[1][is] = 0.0;
       flowVelocity[2][is] = 0.0;

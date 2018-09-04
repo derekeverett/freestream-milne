@@ -1,7 +1,7 @@
 
 #pragma once
 #include <stdlib.h>
-float ** calloc2dArray(float **array, int dim1, int dim2)
+float ** calloc2dArrayf(float **array, int dim1, int dim2)
 {
   array = (float **)calloc(dim1, sizeof(float *));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -11,7 +11,7 @@ float ** calloc2dArray(float **array, int dim1, int dim2)
   return array;
 }
 
-float *** calloc3dArray(float ***array, int dim1, int dim2, int dim3)
+float *** calloc3dArrayf(float ***array, int dim1, int dim2, int dim3)
 {
   array = (float ***)calloc(dim1, sizeof(float **));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -25,7 +25,7 @@ float *** calloc3dArray(float ***array, int dim1, int dim2, int dim3)
   return array;
 }
 
-float **** calloc4dArray(float ****array, int dim1, int dim2, int dim3, int dim4)
+float **** calloc4dArrayf(float ****array, int dim1, int dim2, int dim3, int dim4)
 {
   array = (float ****)calloc(dim1, sizeof(float ***));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -43,7 +43,7 @@ float **** calloc4dArray(float ****array, int dim1, int dim2, int dim3, int dim4
   return array;
 }
 
-float ***** calloc5dArray(float *****array, int dim1, int dim2, int dim3, int dim4, int dim5)
+float ***** calloc5dArrayf(float *****array, int dim1, int dim2, int dim3, int dim4, int dim5)
 {
   array = (float *****)calloc(dim1, sizeof(float ****));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -65,7 +65,7 @@ float ***** calloc5dArray(float *****array, int dim1, int dim2, int dim3, int di
   return array;
 }
 
-void free2dArray(float **array, int dim1)
+void free2dArrayf(float **array, int dim1)
 {
   for (int i1 = 0; i1 < dim1; i1++)
   {
@@ -74,7 +74,7 @@ void free2dArray(float **array, int dim1)
   free(array);
 }
 
-void free3dArray(float ***array, int dim1, int dim2)
+void free3dArrayf(float ***array, int dim1, int dim2)
 {
   for (int i1 = 0; i1 < dim1; i1++)
   {
@@ -86,7 +86,7 @@ void free3dArray(float ***array, int dim1, int dim2)
   }
   free(array);
 }
-void free4dArray(float ****array, int dim1, int dim2, int dim3)
+void free4dArrayf(float ****array, int dim1, int dim2, int dim3)
 {
   for (int i1 = 0; i1 < dim1; i1++)
   {
@@ -103,7 +103,7 @@ void free4dArray(float ****array, int dim1, int dim2, int dim3)
   free(array);
 }
 
-void free5dArray(float *****array, int dim1, int dim2, int dim3, int dim4)
+void free5dArrayf(float *****array, int dim1, int dim2, int dim3, int dim4)
 {
   for (int i1 = 0; i1 < dim1; i1++)
   {
@@ -123,7 +123,7 @@ void free5dArray(float *****array, int dim1, int dim2, int dim3, int dim4)
   }
   free(array);
 }
-float ** malloc2dArray(float **array, int dim1, int dim2)
+float ** malloc2dArrayf(float **array, int dim1, int dim2)
 {
   array = (float **)malloc(dim1 * sizeof(float *));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -133,7 +133,7 @@ float ** malloc2dArray(float **array, int dim1, int dim2)
   return array;
 }
 
-float *** malloc3dArray(float ***array, int dim1, int dim2, int dim3)
+float *** malloc3dArrayf(float ***array, int dim1, int dim2, int dim3)
 {
   array = (float ***)malloc(dim1 * sizeof(float **));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -147,7 +147,7 @@ float *** malloc3dArray(float ***array, int dim1, int dim2, int dim3)
   return array;
 }
 
-float **** malloc4dArray(float ****array, int dim1, int dim2, int dim3, int dim4)
+float **** malloc4dArrayf(float ****array, int dim1, int dim2, int dim3, int dim4)
 {
   array = (float ****)malloc(dim1 * sizeof(float ***));
   for (int i1 = 0; i1 < dim1; i1++)
@@ -165,7 +165,7 @@ float **** malloc4dArray(float ****array, int dim1, int dim2, int dim3, int dim4
   return array;
 }
 
-float ***** malloc5dArray(float *****array, int dim1, int dim2, int dim3, int dim4, int dim5)
+float ***** malloc5dArrayf(float *****array, int dim1, int dim2, int dim3, int dim4, int dim5)
 {
   array = (float *****)malloc(dim1 * sizeof(float ****));
   for (int i1 = 0; i1 < dim1; i1++)

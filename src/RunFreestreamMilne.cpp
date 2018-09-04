@@ -6,7 +6,7 @@
 #include "LandauMatch.cpp"
 #include "EquationOfState.cpp"
 #include "HydroValidity.cpp"
-#include "Memory.cpp"
+#include "Memoryf.cpp"
 #include "FileIO.cpp"
 #include <stdlib.h>
 #include <stdio.h>
@@ -93,11 +93,11 @@ int main(void)
 
   //the initial density G(tilde)^(tau,tau) at time tau_0
   float **density = NULL;
-  density = calloc2dArray(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
+  density = calloc2dArrayf(density, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //the initial density J(tilde)^(tau) at time tau_0
   float **chargeDensity = NULL;
-  if(params.BARYON) chargeDensity = calloc2dArray(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
+  if(params.BARYON) chargeDensity = calloc2dArrayf(chargeDensity, params.DIM, params.DIM_RAP); // function of x,y,eta and rapidity
 
   //initialize energy density
   if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
@@ -211,11 +211,11 @@ int main(void)
 
   //the shifted energy density profile G^(tau,tau) at time tau
   float ***shiftedDensity = NULL;
-  shiftedDensity = calloc3dArray(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
+  shiftedDensity = calloc3dArrayf(shiftedDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //the shifted baryon density profile J^(tau) at time tau
   float ***shiftedChargeDensity = NULL;
-  if(params.BARYON) shiftedChargeDensity = calloc3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
+  if(params.BARYON) shiftedChargeDensity = calloc3dArrayf(shiftedChargeDensity, params.DIM, params.DIM_RAP, params.DIM_PHIP);
 
   //perform the free streaming time-update step and free up memory
   //pretabulate trig and hypertrig functions before this step to save time?
@@ -231,10 +231,10 @@ int main(void)
   freeStream(density, shiftedDensity, params);
 
   //#pragma acc update host(shiftedDensity)
-  free2dArray(density, params.DIM);
+  free2dArrayf(density, params.DIM);
   if (params.BARYON) freeStream(chargeDensity, shiftedChargeDensity, params);
   //#if(params.BARYON) pragma acc update host(shiftedChargeDensity)
-  if (params.BARYON) free2dArray(chargeDensity, params.DIM);
+  if (params.BARYON) free2dArrayf(chargeDensity, params.DIM);
 
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
@@ -246,15 +246,15 @@ int main(void)
 
   //the ten independent components of the stress tensor
   float **stressTensor = NULL;
-  stressTensor = calloc2dArray(stressTensor, 10, params.DIM);
+  stressTensor = calloc2dArrayf(stressTensor, 10, params.DIM);
 
   //the four independent components of baryon current four-vector
   float **baryonCurrent = NULL;
-  if(params.BARYON) baryonCurrent = calloc2dArray(baryonCurrent, 4, params.DIM);
+  if(params.BARYON) baryonCurrent = calloc2dArrayf(baryonCurrent, 4, params.DIM);
 
   //a table containing 10 rows for 10 independent combinations of p_(mu)p_(nu)
   float ****hypertrigTable = NULL;
-  hypertrigTable = calloc4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
+  hypertrigTable = calloc4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
   if (PRINT_SCREEN) printf("calculating hypertrig table\n");
   #ifdef _OPENMP
@@ -272,7 +272,7 @@ int main(void)
   sec = omp_get_wtime();
   #endif
   calculateStressTensor(stressTensor, shiftedDensity, hypertrigTable, params);
-  free3dArray(shiftedDensity, params.DIM, params.DIM_RAP);
+  free3dArrayf(shiftedDensity, params.DIM, params.DIM_RAP);
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
@@ -286,7 +286,7 @@ int main(void)
     sec = omp_get_wtime();
     #endif
     calculateBaryonCurrent(baryonCurrent, shiftedChargeDensity, hypertrigTable, params);
-    free3dArray(shiftedChargeDensity, params.DIM, params.DIM_RAP);
+    free3dArrayf(shiftedChargeDensity, params.DIM, params.DIM_RAP);
     #ifdef _OPENMP
     sec = omp_get_wtime() - sec;
     #endif
@@ -294,7 +294,7 @@ int main(void)
   }
 
   //done with hypertrig table as well
-  free4dArray(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
+  free4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
 
   //variables to store the hydrodynamic variables after the Landau matching is performed
   //the energy density
@@ -307,7 +307,7 @@ int main(void)
 
   //the flow velocity
   float **flowVelocity = NULL;
-  flowVelocity = calloc2dArray(flowVelocity, 4, params.DIM);
+  flowVelocity = calloc2dArrayf(flowVelocity, 4, params.DIM);
 
   //the pressure
   float *pressure = NULL;
@@ -319,11 +319,11 @@ int main(void)
 
   //the shear stress tensor
   float **shearTensor = NULL;
-  shearTensor = calloc2dArray(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
+  shearTensor = calloc2dArrayf(shearTensor, 10, params.DIM); //calculate 10 components, can check tracelessness/orthogonality for accuracy
 
   //the baryon diffusion current vector
   float **baryonDiffusion = NULL;
-  if(params.BARYON) baryonDiffusion = calloc2dArray(baryonDiffusion, 4, params.DIM);
+  if(params.BARYON) baryonDiffusion = calloc2dArrayf(baryonDiffusion, 4, params.DIM);
 
   //solve the eigenvalue problem for the energy density and flow velocity
   if (PRINT_SCREEN) printf("solving eigenvalue problem for energy density and flow velocity\n");
@@ -451,18 +451,18 @@ int main(void)
   }
 
   //free the memory
-  free2dArray(stressTensor, 10);
+  free2dArrayf(stressTensor, 10);
   free(energyDensity);
-  free2dArray(flowVelocity, 4);
+  free2dArrayf(flowVelocity, 4);
   free(pressure);
   free(bulkPressure);
-  free2dArray(shearTensor, 10);
+  free2dArrayf(shearTensor, 10);
 
   if (params.BARYON)
   {
-    free2dArray(baryonCurrent, 4);
+    free2dArrayf(baryonCurrent, 4);
     free(baryonDensity);
-    free2dArray(baryonDiffusion, 4);
+    free2dArrayf(baryonDiffusion, 4);
   }
 
   if (PRINT_SCREEN) printf("Done... Goodbye!\n");
