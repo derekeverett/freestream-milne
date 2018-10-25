@@ -21,7 +21,7 @@ struct parameters
   float DTAU;
   float TAU0;
   int EOS_TYPE;
-
+  float E_FREEZE;
   //these are computed based on the chosen parameters above; they are constrained
   int DIM;
   float TAU;

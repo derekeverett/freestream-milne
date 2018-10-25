@@ -1,23 +1,17 @@
 freestream-milne simulates the solution of the collisionless Boltzmann Equation assuming
-that the particles are massless and that the initial distribution function is isotropic in azimuthal momentum space (px, py), and the initial distribution function
-has a gaussian form in (y - eta), or thermally smeared boost invariant profile.
-Given an intial energy density profile, it computes the stress energy tensor at a later time, in terms of a standard viscous hydro decomposition.
+that the particles are massless and that the initial distribution function is isotropic in azimuthal momentum space (px, py),
+and the initial distribution function has a gaussian form in (y - eta) (3D) or a delta function in (y-eta) (2D).
+Given an initial energy density profile, it computes the stress energy tensor at a later time, in terms of a standard viscous hydro decomposition.
 
 openMP is used to accelerate the computation by default.
-
-On OSX 10.12, clang does not support -fopenmp by default, and one can update gcc to support -fopenmp
-In this case one should call 'gcc-x' as the compiler in the Makefile, where gcc-x is the updated version with openMP support (this is usually installed in /usr/local/bin, so this must be added to PATH)
-
-On Linux, one can change the Makefile to call their c++ compiler with -fopenmp support.
-
-openacc (GPU) acceleration is under development, and is not yet functional
 
 SETTING PARAMETERS
 
 Parameters and options can be set in freestream_input, which is read in at run time.
 They are described below
+OUTPUTFORMAT (int) 1 : disk , 2 : write to vectors in memory
 BARYON (int) 0 : freestream the energy density, 1 : freestream the baryon density and energy density
-IC_ENERGY (int) 1 : Smooth Gaussian, 2 : MC Guassian, 3: read tab delimited file for energy density, 4 : read superMC block format
+IC_ENERGY (int) 1 : Smooth Gaussian, 2 : MC Guassian, 3: read tab delimited file for energy density, 4 : read superMC block format, 5 : read from vector in Memory
 IC_BARYON (int) 1 : Smooth Gaussian, 2 : MC Guassian, 3: read tab delimited file for baryon density
 ETA_WIDTH (float) used to create a 3D profile of energy density from 2D MC Glb (only for superMC block)
 ETA_FLAT (float) used to create a 3D profile of energy density from 2D MC Glb (only for superMC block)
@@ -28,12 +22,11 @@ DIM_Y (int) number of grid points in y
 DIM_ETA (int) number of grid points in eta
 DIM_RAP (int) number of grid points in rapidity for riemann sum
 DIM_PHIP (int) number of grid points in phi_p for riemann sum
-DX (float) lattice spacing in x
-DY (float) lattice spacing in y
+DX (float) lattice spacing in x [fm]
+DY (float) lattice spacing in y [fm]
 DETA (float) lattice spacing in eta
-DRAP (float) lattice spacing in rapidity (differential)
-DTAU (float) free streaming proper time interval
-TAU0 (float) start of free streaming proper time
-EOS_TYPE (int) 1 : conformal EoS, 2 : Wuppertal-Bhudapest Parameterization, 3 : Lattice EoS with nonzero baryon density
-
-Alternatively, one can use the wrapper class defined in src/wrappers to run the code. See wrapperTest.cpp. 
+DRAP (float) lattice spacing in rapidity (differential) DEPRECATED
+DTAU (float) free streaming proper time interval [fm/c]
+TAU0 (float) start of free streaming proper time [fm/c]
+EOS_TYPE (int) 1 : conformal EoS, 2 : Wuppertal-Bhudapest Parameterization
+E_FREEZE (float) [GeV/fm^3] used to calculate fraction of energy contained within surface of energy density > E_FREEZE

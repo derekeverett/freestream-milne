@@ -166,6 +166,7 @@ params.DRAP = 0.2;
 params.DTAU = 0.5;
 params.TAU0 = 0.1;
 params.EOS_TYPE = 1;
+params.E_FREEZE = 1.7;
 
 //read in chosen parameters from freestream_input if such a file exists
 readInParameters(params);
@@ -182,9 +183,10 @@ if(PRINT_SCREEN)
   {
     printf("Parameters are ...\n");
     printf("(DIM_X, DIM_Y, DIM_ETA, DIM_PHIP, DIM_RAP) = (%d, %d, %d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA, params.DIM_PHIP, params.DIM_RAP);
-    printf("(DX, DY, DETA, DTAU) = (%.2f, %.2f, %.2f, %.2f)\n", params.DX, params.DY, params.DETA, params.DTAU);
-    printf("TAU0 = %.2f \n", params.TAU0);
+    printf("(DX, DY, DETA, DTAU) = (%.2f fm, %.2f fm, %.2f, %.2f fm/c)\n", params.DX, params.DY, params.DETA, params.DTAU);
+    printf("TAU0 = %.2f fm/c\n", params.TAU0);
     printf("SIGMA = %.2f \n", params.SIGMA);
+    printf("E_FREEZE = %.3f GeV / fm^3 \n", params.E_FREEZE);
     if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
     else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
     else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
@@ -285,7 +287,6 @@ if (params.BARYON)
 }
 
 //write initial energy density and baryon density to file
-
 writeScalarToFile(initialEnergyDensity, "initial_e", params);
 if (params.BARYON) writeScalarToFile(initialChargeDensity, "initial_nB", params);
 writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection", params);
@@ -312,7 +313,6 @@ if (params.DIM_ETA > 1) totalEnergy *= (params.TAU0 * params.DX * params.DY * pa
 else totalEnergy *= (params.DX * params.DY);
 printf("Total energy before streaming : %f \n", totalEnergy);
 
-
 //convert the energy density profile into the initial density profile to be streamed and free memory
 convertInitialDensity(initialEnergyDensity, density, params);
 if (!TEST_INTERPOL) free(initialEnergyDensity);
@@ -331,9 +331,6 @@ if(params.BARYON) shiftedChargeDensity = calloc3dArrayf(shiftedChargeDensity, pa
 //perform the free streaming time-update step and free up memory
 //pretabulate trig and hypertrig functions before this step to save time?
 if (PRINT_SCREEN) printf("performing the free streaming\n");
-//copy initial and shifted density arrays to GPU
-//#pragma acc data copy(density[:params.DIM][:params.DIM_RAP]), copy(shiftedDensity[:params.DIM][:params.DIM_RAP][:params.DIM_PHIP]) //copy energy density arrays
-//#if(params.BARYON) pragma acc data copy(chargeDensity), copy(shiftedChargeDensity)  //copy baryon density arrays
 
 double sec = 0.0;
 #ifdef _OPENMP
@@ -372,14 +369,7 @@ float ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
 if (PRINT_SCREEN) printf("calculating hypertrig table\n");
-#ifdef _OPENMP
-sec = omp_get_wtime();
-#endif
 calculateHypertrigTable(hypertrigTable, params);
-#ifdef _OPENMP
-sec = omp_get_wtime() - sec;
-#endif
-if (PRINT_SCREEN) printf("calculating trig table took %f seconds\n", sec);
 
 //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
 if (PRINT_SCREEN) printf("calculating independent components of stress tensor\n");
@@ -497,6 +487,16 @@ if (params.DIM_ETA > 1) totalEnergyAfter *= (params.TAU * params.DX * params.DY 
 else totalEnergyAfter *= (params.TAU * params.DX * params.DY);
 printf("Total energy after streaming : %f \n", totalEnergyAfter);
 
+//check which fraction of total energy lies within freezeout surface, which lies in 'corona'
+float totalEnergyInsideHypersurf = 0.0;
+for (int is = 0; is < params.DIM; is++)
+{
+  if ( (energyDensity[is] * HBARC) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
+}
+if (params.DIM_ETA > 1) totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY * params.DETA);
+else totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY);
+printf("Fraction of energy contained in Freezeout Hypersurface : %f \n", totalEnergyInsideHypersurf / totalEnergyAfter);
+
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 //bulk inv reynolds #
 float *R_Pi_Inv = NULL;
@@ -611,8 +611,6 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
     final_Pi[is] = (double)bulkPressure[is] * HBARC;
   }
 }
-
-
 
 //free the memory
 free2dArrayf(stressTensor, 10);
