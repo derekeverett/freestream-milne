@@ -1,5 +1,8 @@
-rm RunFreestreamMilne
+rm RunWrapper
+
 rm -R output
 mkdir output
-cp parameters.dat output/parameters.dat
+
+cp freestream_input output/freestream_input
+
 make
