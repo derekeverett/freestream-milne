@@ -55,7 +55,6 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
 void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable, parameters params)
 {
-  //int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
   int DIM_RAP = params.DIM_RAP;
@@ -75,6 +74,8 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
       int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
       int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
+      float stressTensor_tmp = 0.0;
+
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
@@ -86,12 +87,12 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
           //check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
           //#pragma omp simd (+:stressTensor_tmp)
-          if (DIM_ETA == 1) stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
-          else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
+          if (DIM_ETA == 1) stressTensor_tmp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          else stressTensor_tmp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
         }
       }
-      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
-      else stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //multiply by common differential factor once
+      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor_tmp * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
+      else stressTensor[ivar][is] = stressTensor_tmp * d_phip; //multiply by common differential factor once
     }
   }
 }
@@ -116,16 +117,17 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
       int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
       int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
+      float baryonCurrent_tmp = 0.0;
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
-          baryonCurrent[ivar][is] += shiftedChargeDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          baryonCurrent_tmp += shiftedChargeDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
         }
       }
-      baryonCurrent[ivar][is] = baryonCurrent[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
+      baryonCurrent[ivar][is] = baryonCurrent_tmp * DRAP * d_phip; //multiply by common differential factor once
     }
   }
 }

@@ -23,10 +23,10 @@ float linearInterp2D(float x0, float x1,
                       float a00, float a10, float a01, float a11)
 {
   float result = 0.0;
-  result = ((1-x0) * (1-x1) * a00)
-            + ((x0) * (1-x1) * a10)
-            + ((1-x0) * (x1) * a01)
-            + ((x0) * (x1) * a11));
+  result = ( (1-x0) * (1-x1) * a00 )
+            + ( (x0) * (1-x1) * a10 )
+            + ( (1-x0) * (x1) * a01 )
+            + ( (x0) * (x1) * a11 );
 
   return result;
 }
