@@ -3,7 +3,6 @@
 #ifndef SRC_FREESTREAMMILNE_
 #define SRC_FREESTREAMMILNE_
 
-//#include "Parameter.h"
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"
@@ -11,21 +10,17 @@
 #include "HydroValidity.cpp"
 #include "Memoryf.cpp"
 #include "FileIO.cpp"
-//#include "WriteHistory.cpp"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
 #include <vector>
+#include <math.h>
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#define PI 3.141592654f
-#define PRINT_SCREEN 1 //turn on for program info to print to terminal
-//#define HBARC 0.197326938f
-#define HBARC 0.197326938 //used to convert units of input / output hydro vectors
 #define TEST_INTERPOL 0 //try calculating the profile at intermediate times by interpolating between the initial profile and final (streamed) profile...
 
 using namespace std;
@@ -39,12 +34,10 @@ class FREESTREAMMILNE {
 
     int run_freestream_milne();
 
-    // IS THIS VARIABLE NECESSARY
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
     //support to initilialize the energy density from a vector - useful for JETSCAPE
-    //note units of argument should be GeV / fm^3
-    //then we convert to fm^(-4)
+    //note units of argument should be GeV / fm^3 , then we convert to fm^(-4)
     void initialize_from_vector(std::vector<float>);
     std::vector<float> init_energy_density;
 
@@ -140,7 +133,7 @@ void FREESTREAMMILNE::output_to_vectors(std::vector<double> &energy_density_out,
 //where the magic happens
 int FREESTREAMMILNE::run_freestream_milne() {
 
-if(PRINT_SCREEN) printf("Welcome to freestream-milne\n");
+printf("Welcome to freestream-milne\n");
 
 //declare parameter struct
 struct parameters params;
@@ -179,7 +172,8 @@ int DIM_X = params.DIM_X;
 int DIM_Y = params.DIM_Y;
 int DIM_ETA = params.DIM_ETA;
 
-if(PRINT_SCREEN)
+double hbar_c = 0.197326938;
+
   {
     printf("Parameters are ...\n");
     printf("(DIM_X, DIM_Y, DIM_ETA, DIM_PHIP, DIM_RAP) = (%d, %d, %d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA, params.DIM_PHIP, params.DIM_RAP);
@@ -192,7 +186,7 @@ if(PRINT_SCREEN)
     else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
   }
 //allocate and initialize memory
-if (PRINT_SCREEN) printf("Allocating memory\n");
+ printf("Allocating memory\n");
 
 //the initial energy density spatial profile
 float *initialEnergyDensity = NULL;
@@ -215,42 +209,37 @@ if(params.BARYON) chargeDensity = calloc2dArrayf(chargeDensity, params.DIM, para
 //define a lower bound on energy density for all cells to regulate numerical noise in flow velocity in dilute regions
 float lower_tolerance = 1.0e-7;
 
-if (PRINT_SCREEN) printf("setting initial conditions on energy density : ");
+ printf("setting initial conditions on energy density : ");
 if (params.IC_ENERGY == 1)
 {
   initializeEllipticalGauss(initialEnergyDensity, 15.0, 15.0, 15.0, params);
-  if(PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
+   printf("Smooth Oblate Gaussian \n");
 }
 else if (params.IC_ENERGY == 2)
 {
   initializeEllipticalMCGauss(initialEnergyDensity, 15.0, 15.0, 15.0, params);
-  if(PRINT_SCREEN) printf("Fluctuating Oblate Gaussian \n");
+   printf("Fluctuating Oblate Gaussian \n");
 }
 else if (params.IC_ENERGY == 3)
 {
   readDensityFile(initialEnergyDensity, "initial_profiles/e", params);
-  if(PRINT_SCREEN) printf("Reading from energy density file in initial_profiles/ \n");
+   printf("Reading from energy density file in initial_profiles/ \n");
 }
 else if (params.IC_ENERGY == 4)
 {
   readEnergyDensitySuperMCBlock(initialEnergyDensity, params);
-  if(PRINT_SCREEN) printf("Reading from superMC energy density file in initial_profiles/ \n");
+   printf("Reading from superMC energy density file in initial_profiles/ \n");
 }
 else if (params.IC_ENERGY == 5)
 {
   //read in initial energy density using the initiliaze_from_vector() function
   //note that this is not safe - if one passes an empty vector it will not throw an error
   //converting units of energy density from GeV / fm^3 to fm^(-4)
-  if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
+   printf("Reading energy density from initial energy density vector\n");
   //do a value copy
-
   //try adding a small value everywhere to regulate problems with flow velocity in dilute regions
-
-  //TEMPORARY
-  //rescale initial distribution
   float rescale = 1.0;
-  //TEMPORARY
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)HBARC + lower_tolerance;
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)hbar_c + lower_tolerance;
   //just doing this here for testing - try increasing normalization of initial distribution to improve stability
   //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
@@ -263,21 +252,21 @@ else
 if (params.BARYON)
 {
   //initialize baryon density
-  if (PRINT_SCREEN) printf("setting initial conditions on baryon density : ");
+   printf("setting initial conditions on baryon density : ");
   if (params.IC_BARYON == 1)
   {
     initializeEllipticalGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
-    if (PRINT_SCREEN) printf("Smooth Oblate Gaussian \n");
+     printf("Smooth Oblate Gaussian \n");
   }
   else if (params.IC_BARYON == 2)
   {
     initializeEllipticalMCGauss(initialChargeDensity, 2.0, 3.0, 1.0, params);
-    if (PRINT_SCREEN) printf("Fluctuating Oblate Gaussian \n");
+     printf("Fluctuating Oblate Gaussian \n");
   }
   else if (params.IC_BARYON == 3)
   {
     readDensityFile(initialChargeDensity, "initial_profiles/nB", params);
-    if (PRINT_SCREEN) printf("Reading from baryon density file in initial_profiles/ \n");
+     printf("Reading from baryon density file in initial_profiles/ \n");
   }
   else
   {
@@ -330,7 +319,7 @@ if(params.BARYON) shiftedChargeDensity = calloc3dArrayf(shiftedChargeDensity, pa
 
 //perform the free streaming time-update step and free up memory
 //pretabulate trig and hypertrig functions before this step to save time?
-if (PRINT_SCREEN) printf("performing the free streaming\n");
+ printf("performing the free streaming\n");
 
 double sec = 0.0;
 #ifdef _OPENMP
@@ -350,10 +339,10 @@ if (params.BARYON) free2dArrayf(chargeDensity, params.DIM);
 #ifdef _OPENMP
 sec = omp_get_wtime() - sec;
 #endif
-if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
+ printf("Free streaming took %f seconds\n", sec);
 
 //Landau matching to find the components of energy-momentum tensor
-if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
+ printf("Landau matching to find hydrodynamic variables\n");
 
 //the ten independent components of the stress tensor
 float **stressTensor = NULL;
@@ -368,11 +357,11 @@ if(params.BARYON) baryonCurrent = calloc2dArrayf(baryonCurrent, 4, params.DIM);
 float ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
-if (PRINT_SCREEN) printf("calculating hypertrig table\n");
+ printf("calculating hypertrig table\n");
 calculateHypertrigTable(hypertrigTable, params);
 
 //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
-if (PRINT_SCREEN) printf("calculating independent components of stress tensor\n");
+ printf("calculating independent components of stress tensor\n");
 #ifdef _OPENMP
 sec = omp_get_wtime();
 #endif
@@ -381,12 +370,12 @@ free3dArrayf(shiftedDensity, params.DIM, params.DIM_RAP);
 #ifdef _OPENMP
 sec = omp_get_wtime() - sec;
 #endif
-if (PRINT_SCREEN) printf("calculating stress tensor took %f seconds\n", sec);
+ printf("calculating stress tensor took %f seconds\n", sec);
 
 if (params.BARYON)
 {
   //calculate the four independent components of the baryon current by integrating over rapidity and phi_p
-  if (PRINT_SCREEN) printf("calculating independent components of baryon current\n");
+   printf("calculating independent components of baryon current\n");
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -395,7 +384,7 @@ if (params.BARYON)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  if (PRINT_SCREEN) printf("calculating baryon current took %f seconds\n", sec);
+   printf("calculating baryon current took %f seconds\n", sec);
 }
 
 //done with hypertrig table as well
@@ -431,7 +420,7 @@ float **baryonDiffusion = NULL;
 if(params.BARYON) baryonDiffusion = calloc2dArrayf(baryonDiffusion, 4, params.DIM);
 
 //solve the eigenvalue problem for the energy density and flow velocity
-if (PRINT_SCREEN) printf("solving eigenvalue problem for energy density and flow velocity\n");
+ printf("solving eigenvalue problem for energy density and flow velocity\n");
 #ifdef _OPENMP
 sec = omp_get_wtime();
 #endif
@@ -439,12 +428,12 @@ solveEigenSystem(stressTensor, energyDensity, flowVelocity, params);
 #ifdef _OPENMP
 sec = omp_get_wtime() - sec;
 #endif
-if (PRINT_SCREEN) printf("solving eigenvalue problem took %f seconds\n", sec);
+ printf("solving eigenvalue problem took %f seconds\n", sec);
 
 if (params.BARYON)
 {
   //calculate baryon density and diffusion current
-  if (PRINT_SCREEN) printf("calculating baryon density and diffusion current \n");
+   printf("calculating baryon density and diffusion current \n");
   #ifdef _OPENMP
   sec = omp_get_wtime();
   #endif
@@ -453,7 +442,7 @@ if (params.BARYON)
   #ifdef _OPENMP
   sec = omp_get_wtime() - sec;
   #endif
-  if (PRINT_SCREEN) printf("calculating baryon density and diffusion current took %f seconds\n", sec);
+   printf("calculating baryon density and diffusion current took %f seconds\n", sec);
 }
 
 calculatePressure(energyDensity, baryonDensity, pressure, params);
@@ -491,7 +480,7 @@ printf("Total energy after streaming : %f \n", totalEnergyAfter);
 float totalEnergyInsideHypersurf = 0.0;
 for (int is = 0; is < params.DIM; is++)
 {
-  if ( (energyDensity[is] * HBARC) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
+  if ( (energyDensity[is] * hbar_c) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
 }
 if (params.DIM_ETA > 1) totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY * params.DETA);
 else totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY);
@@ -516,7 +505,7 @@ free(R_pimunu_Inv);
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 
 
-if (PRINT_SCREEN) printf("writing hydro variables\n");
+ printf("writing hydro variables\n");
 
 writeScalarToFile(energyDensity, "e", params);
 writeScalarToFile(pressure, "p", params);
@@ -592,23 +581,23 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
   for (int is = 0; is < params.DIM; is++)
   {
     //converting back to GeV / fm^3 for use in JETSCAPE
-    final_energy_density[is] = (double)energyDensity[is] * HBARC;
-    final_pressure[is] = (double)pressure[is] * HBARC;
+    final_energy_density[is] = (double)energyDensity[is] * hbar_c;
+    final_pressure[is] = (double)pressure[is] * hbar_c;
     final_ut[is] = (double)flowVelocity[0][is];
     final_ux[is] = (double)flowVelocity[1][is];
     final_uy[is] = (double)flowVelocity[2][is];
     final_un[is] = (double)flowVelocity[3][is];
-    final_pitt[is] = (double)shearTensor[0][is] * HBARC;
-    final_pitx[is] = (double)shearTensor[1][is] * HBARC;
-    final_pity[is] = (double)shearTensor[2][is] * HBARC;
-    final_pitn[is] = (double)shearTensor[3][is] * HBARC;
-    final_pixx[is] = (double)shearTensor[4][is] * HBARC;
-    final_pixy[is] = (double)shearTensor[5][is] * HBARC;
-    final_pixn[is] = (double)shearTensor[6][is] * HBARC;
-    final_piyy[is] = (double)shearTensor[7][is] * HBARC;
-    final_piyn[is] = (double)shearTensor[8][is] * HBARC;
-    final_pinn[is] = (double)shearTensor[9][is] * HBARC;
-    final_Pi[is] = (double)bulkPressure[is] * HBARC;
+    final_pitt[is] = (double)shearTensor[0][is] * hbar_c;
+    final_pitx[is] = (double)shearTensor[1][is] * hbar_c;
+    final_pity[is] = (double)shearTensor[2][is] * hbar_c;
+    final_pitn[is] = (double)shearTensor[3][is] * hbar_c;
+    final_pixx[is] = (double)shearTensor[4][is] * hbar_c;
+    final_pixy[is] = (double)shearTensor[5][is] * hbar_c;
+    final_pixn[is] = (double)shearTensor[6][is] * hbar_c;
+    final_piyy[is] = (double)shearTensor[7][is] * hbar_c;
+    final_piyn[is] = (double)shearTensor[8][is] * hbar_c;
+    final_pinn[is] = (double)shearTensor[9][is] * hbar_c;
+    final_Pi[is] = (double)bulkPressure[is] * hbar_c;
   }
 }
 
@@ -627,7 +616,7 @@ if (params.BARYON)
   free2dArrayf(baryonDiffusion, 4);
 }
 
-if (PRINT_SCREEN) printf("Done... Goodbye!\n");
+ printf("Done... Goodbye!\n");
 
 }
 
