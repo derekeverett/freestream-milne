@@ -7,11 +7,8 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_sort_vector.h>
-//#include <math.h>
+#include <math.h>
 #include "Parameter.h"
-#define PI 3.141592654f
-#define REGULATE 0 // 1 for hard regulation of flow in dilute regions
-#define GAMMA_MAX 50.0
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
@@ -27,11 +24,9 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
   #pragma omp parallel for simd
   for (int irap = 0; irap < DIM_RAP; irap++)
   {
-    //float rap = (float)irap * DRAP + rapmin;
-
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
     {
-      float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
+      float phip = float(iphip) * (2.0 * M_PI) / float(DIM_PHIP);
 
       for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
@@ -40,10 +35,8 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
-        float rap = eta + tan((PI / 2.0) * w );
+        float rap = eta + tan((M_PI / 2.0) * w );
         if (DIM_ETA == 1) rap = 0.0;
-        //try evaluating at values of rapidity y centered around y ~= eta
-        //if (DIM_ETA > 1) rap = rap + eta;
 
         hypertrigTable[0][irap][iphip][ieta] = 1.0; //p^tau, p^tau component
         hypertrigTable[1][irap][iphip][ieta] = cos(phip) / cosh(rap - eta); //p^tau, p^x
@@ -62,18 +55,15 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
 void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable, parameters params)
 {
-  //int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
   int DIM_RAP = params.DIM_RAP;
   int DIM_PHIP = params.DIM_PHIP;
   int DIM = params.DIM;
-  //float DRAP = params.DRAP;
   float TAU = params.TAU;
-  //float TAU = params.TAU;
   float weight_rap;
 
-  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+  float d_phip = (2.0 * M_PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 10; ivar++)
   {
@@ -84,34 +74,31 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
       int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
       int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
+      float stressTensor_tmp = 0.0;
+
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
-        //try trapezoid rule for rapidity integral
-        //if (irap == 0 || irap == DIM_RAP - 1) weight_rap = DRAP / 2.0;
-        //else weight_rap = DRAP;
-
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
-        float jacobian = (PI/2.0) / cos( (PI/2.0)*w ) / cos( (PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
+        float jacobian = (M_PI/2.0) / cos( (M_PI/2.0)*w ) / cos( (M_PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
 
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
           //check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
           //#pragma omp simd (+:stressTensor_tmp)
-          if (DIM_ETA == 1) stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
-          else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
+          if (DIM_ETA == 1) stressTensor_tmp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          else stressTensor_tmp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
         }
       }
-      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
-      else stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //multiply by common differential factor once
+      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor_tmp * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
+      else stressTensor[ivar][is] = stressTensor_tmp * d_phip; //multiply by common differential factor once
     }
   }
 }
 
 void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity, float ****hypertrigTable, parameters params)
 {
-  //int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
   int DIM_ETA = params.DIM_ETA;
   int DIM_RAP = params.DIM_RAP;
@@ -119,7 +106,7 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
   int DIM = params.DIM;
   float DRAP = params.DRAP;
 
-  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+  float d_phip = (2.0 * M_PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 4; ivar++)
   {
@@ -130,16 +117,17 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
       int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
       int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
 
+      float baryonCurrent_tmp = 0.0;
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
           //rather than gauss quadrature, just doing a elementary Riemann sum here; check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
-          baryonCurrent[ivar][is] += shiftedChargeDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          baryonCurrent_tmp += shiftedChargeDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
         }
       }
-      baryonCurrent[ivar][is] = baryonCurrent[ivar][is] * DRAP * d_phip; //multiply by common differential factor once
+      baryonCurrent[ivar][is] = baryonCurrent_tmp * DRAP * d_phip; //multiply by common differential factor once
     }
   }
 }
@@ -156,6 +144,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   float TAU = params.TAU;
 
   float tolerance = 1.0e-5;
+  float gamma_max = 50.0;
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -240,7 +229,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
           if (GSL_REAL(v0) < 0) factor=-factor;
 
           //ignore eigenvectors with gamma too large
-          if ( (GSL_REAL(v0) * factor) < GAMMA_MAX)
+          if ( (GSL_REAL(v0) * factor) < gamma_max)
           {
             eigenvalue_exists = 1;
             energyDensity[is] = GSL_REAL(eigenvalue);
@@ -249,33 +238,6 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
             flowVelocity[2][is] = GSL_REAL(v2) * factor;
             flowVelocity[3][is] = GSL_REAL(v3) * factor;
           }
-          /*
-	        if ( (energyDensity[is] / tolerance < 1.0) && REGULATE)
-	         {
-	            energyDensity[is] = tolerance;
-	            flowVelocity[0][is] = 1.0;
-	            flowVelocity[1][is] = 0.0;
-	            flowVelocity[2][is] = 0.0;
-	            flowVelocity[3][is] = 0.0;
-            }
-
-
-            if (REGULATE)
-            {
-              //cut out unreasonable values of flow
-              //int stride_x = 2*DIM_Y * DIM_ETA;
-              //int stride_y = 2*DIM_ETA;
-              //if (abs(flowVelocity[1][is]) > 6.0) flowVelocity[1][is] = 0.25 * (flowVelocity[1][is+stride_x] + flowVelocity[1][is-stride_x] + flowVelocity[1][is+stride_y] + flowVelocity[1][is-stride_y]);
-              //if (abs(flowVelocity[2][is]) > 6.0) flowVelocity[2][is] = 0.25 * (flowVelocity[2][is+stride_x] + flowVelocity[2][is-stride_x] + flowVelocity[2][is+stride_y] + flowVelocity[2][is-stride_y]);
-              if (flowVelocity[1][is] > 10.0) {flowVelocity[1][is] = 10.0;}
-              if (flowVelocity[2][is] > 10.0) {flowVelocity[2][is] = 10.0;}
-              if (flowVelocity[1][is] < -10.0) {flowVelocity[1][is] = -10.0;}
-              if (flowVelocity[2][is] < -10.0) {flowVelocity[2][is] = -10.0;}
-              //enforce timelike condition on these cells
-
-            }
-            */
-
         } // if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
       } // if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
     } //for (int i = 0; i < 4; ...)
@@ -291,100 +253,6 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     }
   } // for (int is; is < DIM; ...)
 
-  //now regulate the flow velocity by a smoothing procedure. Flow can be too large in dilute regions, cause hydro to crash...
-  //this method doesnt yield a smooth profile
-
-  /*
-  if (REGULATE)
-  {
-    printf("Regulating flow velocity profile in dilute regions \n");
-    #pragma omp parallel for
-    for (int is = 0; is < DIM; is++)
-    {
-      int ix = is / (DIM_Y * DIM_ETA);
-      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
-      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
-
-      int stride = 2;
-      int ix_p = ix + stride;
-      int ix_m = ix - stride;
-      int iy_p = iy + stride;
-      int iy_m = iy - stride;
-
-      int is_left   = (DIM_Y * DIM_ETA * ix_m) + (DIM_ETA * iy) + ieta;
-      int is_right  = (DIM_Y * DIM_ETA * ix_p) + (DIM_ETA * iy) + ieta;
-      int is_top    = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy_p) + ieta;
-      int is_bottom = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy_m) + ieta;
-
-      if (flowVelocity[0][is] > GAMMA_MAX)
-      {
-        //set the values of this cell to the 'minimum' of its surrounding neighbors
-        flowVelocity[0][is] = std::min( flowVelocity[0][is_left], flowVelocity[0][is_right]  );
-        flowVelocity[0][is] = std::min( flowVelocity[0][is]     , flowVelocity[0][is_top]    );
-        flowVelocity[0][is] = std::min( flowVelocity[0][is]     , flowVelocity[0][is_bottom] );
-
-        if (flowVelocity[0][is] == flowVelocity[0][is_left])
-        {
-          energyDensity[is]   = energyDensity[is_left];
-          flowVelocity[1][is] = flowVelocity[1][is_left];
-          flowVelocity[2][is] = flowVelocity[2][is_left];
-          flowVelocity[3][is] = flowVelocity[3][is_left];
-        }
-        else if (flowVelocity[0][is] == flowVelocity[0][is_right])
-        {
-          energyDensity[is]   = energyDensity[is_right];
-          flowVelocity[1][is] = flowVelocity[1][is_right];
-          flowVelocity[2][is] = flowVelocity[2][is_right];
-          flowVelocity[3][is] = flowVelocity[3][is_right];
-        }
-        else if (flowVelocity[0][is] == flowVelocity[0][is_top])
-        {
-          energyDensity[is]   = energyDensity[is_top];
-          flowVelocity[1][is] = flowVelocity[1][is_top];
-          flowVelocity[2][is] = flowVelocity[2][is_top];
-          flowVelocity[3][is] = flowVelocity[3][is_top];
-        }
-        if (flowVelocity[0][is] == flowVelocity[0][is_bottom])
-        {
-          energyDensity[is]   = energyDensity[is_bottom];
-          flowVelocity[1][is] = flowVelocity[1][is_bottom];
-          flowVelocity[2][is] = flowVelocity[2][is_bottom];
-          flowVelocity[3][is] = flowVelocity[3][is_bottom];
-        }
-
-      } //if (flowVelocity[0][is] > GAMMA_MAX)
-    } //for (int is = 0; is < DIM; is++)
-  }
-  */
-
-  //try scaling the flow velocity by a smooth profile which goes to zero after some finite radius
-  if (REGULATE)
-  {
-    printf("Regulating flow velocity profile in dilute regions \n");
-    #pragma omp parallel for simd
-    for (int is = 0; is < DIM; is++)
-    {
-      int ix = is / (DIM_Y * DIM_ETA);
-      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
-      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
-
-      float x = (float)ix * DX  - ((float)(DIM_X-1)) / 2.0 * DX;
-      float y = (float)iy * DY  - ((float)(DIM_Y-1)) / 2.0 * DY;
-      float r = sqrt(x*x + y*y);
-      float eta = (float)ieta * DETA  - ((float)(DIM_ETA-1)) / 2.0 * DETA;
-
-      float R_WIDTH = 1.0;
-      float R_FLAT = 7.5;
-      float arg = (-1.0) * (r - R_FLAT) * (r - R_FLAT) / (2.0 * R_WIDTH * R_WIDTH);
-      arg = arg * THETA_FUNCTION(r - R_FLAT);
-
-      flowVelocity[1][is] = flowVelocity[1][is] * exp(arg);
-      flowVelocity[2][is] = flowVelocity[2][is] * exp(arg);
-
-      flowVelocity[0][is] = sqrt( 1 + flowVelocity[1][is]*flowVelocity[1][is] + flowVelocity[2][is]*flowVelocity[2][is] + TAU*TAU*flowVelocity[3][is]*flowVelocity[3][is]);
-    }
-
-  }
 
 } //solveEigenSystem()
 void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure, parameters params)

@@ -1,9 +1,8 @@
 //trigTable is a table with 10 rows for ten combinations or p^(mu)p_(nu) normalized by the energy
 #pragma once
 #include <stdio.h>
-//#include <math.h>
+#include <math.h>
 #include "Parameter.h"
-#define PI 3.141592654f
 
 void calculateBulkInvReynolds(float *pressure, float *bulkPressure, float *R_Pi_Inv, parameters params)
 {

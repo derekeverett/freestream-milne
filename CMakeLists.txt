@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (testWrapper)
+project (freestream)
 
 #for MacOSX
 cmake_policy(SET CMP0042 NEW)
@@ -15,6 +15,5 @@ SET(LIBS ${GSL_LIBRARIES})
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS})
 
-add_executable(testWrapper testWrapper.cpp)
+add_subdirectory(src)
 
-target_link_libraries(testWrapper ${LIBS})

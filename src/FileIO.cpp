@@ -7,9 +7,6 @@
 #include "Parameter.h"
 #include <math.h>
 
-#define MINX 0
-#define MINY 0
-#define MINETA 0
 void writeScalarToFile(float *var, char name[255], parameters params)
 {
   int DIM_X = params.DIM_X;
@@ -24,11 +21,11 @@ void writeScalarToFile(float *var, char name[255], parameters params)
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = MINX; ix < DIM_X - MINX; ix++)
+  for (int ix = 0; ix < DIM_X; ix++)
   {
-    for (int iy = MINY; iy < DIM_Y - MINY; iy++)
+    for (int iy = 0; iy < DIM_Y; iy++)
     {
-      for (int ieta = MINETA; ieta < DIM_ETA - MINETA; ieta++)
+      for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
         float x = (float)ix * DX  - (((float)(DIM_X-1)) / 2.0 * DX);
         x = DX * roundf(x / DX);
@@ -60,11 +57,11 @@ void writeVectorToFile(float **var, char name[255], int idx, parameters params)
   char filename[255] = "";
   sprintf(filename, "output/%s.dat", name);
   myfile.open(filename);
-  for (int ix = MINX; ix < DIM_X - MINX; ix++)
+  for (int ix = 0; ix < DIM_X; ix++)
   {
-    for (int iy = MINY; iy < DIM_Y - MINY; iy++)
+    for (int iy = 0; iy < DIM_Y; iy++)
     {
-      for (int ieta = MINETA; ieta < DIM_ETA - MINETA; ieta++)
+      for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
         float x = (float)ix * DX  - (((float)(DIM_X-1)) / 2.0 * DX);
         x = DX * roundf(x / DX); //rounding for regularly spaced values
@@ -230,9 +227,3 @@ void readInParameters(struct parameters &params)
   }
 
 }
-/*
-void readEoSTable()
-{
-
-}
-*/
