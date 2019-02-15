@@ -11,7 +11,7 @@
 #include "Parameter.h"
 #define PI 3.141592654f
 #define REGULATE 0 // 1 for hard regulation of flow in dilute regions
-#define GAMMA_MAX 50.0
+#define GAMMA_MAX 100.0
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
@@ -155,7 +155,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   float DETA = params.DETA;
   float TAU = params.TAU;
 
-  float tolerance = 1.0e-5;
+  float tolerance = 1.0e-7;
 
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
@@ -172,9 +172,9 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
     //set the values of the energy momentum tensor
 
-    //try adding a small value everywhere to T^\tau\tau make flow velocity look nicer
-    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is] + tolerance); //tau,tau
-    //gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tau,tau
+    //try adding a small value everywhere to T^\tau\tau make flow velocity -> 0 in dilute regions
+    //gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is] + tolerance); //tau,tau
+    gsl_matrix_set(Tmunu, 0, 0, stressTensor[0][is]); //tau,tau
     gsl_matrix_set(Tmunu, 0, 1, stressTensor[1][is]); //tau,x
     gsl_matrix_set(Tmunu, 0, 2, stressTensor[2][is]); //tau,y
     gsl_matrix_set(Tmunu, 0, 3, stressTensor[3][is]); //tau,eta
@@ -225,7 +225,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
       //if (GSL_REAL(eigenvalue) > 0.0 && GSL_IMAG(eigenvalue) == 0) //choose eigenvalue
       //eigenvalue condition taken from JF's suggestion, test for robustness in dilute region
-      if ( GSL_REAL(eigenvalue) > 0.0 && fabs( GSL_IMAG(eigenvalue) ) < ( fabs(GSL_REAL(eigenvalue)) * 1.0e-10) ) //choose eigenvalue
+      if ( GSL_REAL(eigenvalue) > 0.0 && fabs( GSL_IMAG(eigenvalue) ) < ( fabs(GSL_REAL(eigenvalue)) * 1.0e-30) ) //choose eigenvalue
       {
         gsl_complex v0 = gsl_matrix_complex_get(eigen_vectors, 0 , i);
         gsl_complex v1 = gsl_matrix_complex_get(eigen_vectors, 1 , i);

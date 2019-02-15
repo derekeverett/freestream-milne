@@ -37,3 +37,65 @@ void calculateShearInvReynolds(float *energyDensity, float *pressure, float **sh
     R_pimunu_Inv[is] = sqrt(fabs(num)) / sqrt(fabs(den));
   }
 }
+
+void calculate_pi_dot_u(float **flowVelocity, float **shearTensor, float *pi_dot_u_tau, float *pi_dot_u_x, float *pi_dot_u_y, float *pi_dot_u_eta, parameters params)
+{
+  int DIM = params.DIM;
+  float tau = params.TAU;
+  #pragma omp parallel for simd
+  for (int is = 0; is < DIM; is++)
+  {
+    //contravariant flow u^mu
+    float ut = flowVelocity[0][is];
+    float ux = flowVelocity[1][is];
+    float uy = flowVelocity[2][is];
+    float un = flowVelocity[3][is];
+    
+    //covariant flow u_mu
+    ux = -ux;
+    uy = -uy;
+    un = -tau * tau * un;
+    
+    //contravariant shear stress
+    float pitt = shearTensor[0][is];
+    float pitx = shearTensor[1][is];
+    float pity = shearTensor[2][is];
+    float pitn = shearTensor[3][is];
+    float pixx = shearTensor[4][is];
+    float pixy = shearTensor[5][is];
+    float pixn = shearTensor[6][is];
+    float piyy = shearTensor[7][is];
+    float piyn = shearTensor[8][is];
+    float pinn = shearTensor[9][is];
+
+    pi_dot_u_tau[is] = pitt*ut + pitx*ux + pity*uy + pitn*un;
+    pi_dot_u_x[is] = pitx*ut + pixx*ux + pixy*uy + pixn*un;
+    pi_dot_u_y[is] = pity*ut + pixy*ux + piyy*uy + piyn*un;
+    pi_dot_u_eta[is] = pitn*ut + pixn*ux + piyn*uy + pinn*un;
+
+  }
+}
+
+void calculate_pi_mu_mu(float **shearTensor, float *pi_mu_mu, parameters params)
+{
+  int DIM = params.DIM;
+  float tau = params.TAU;
+  #pragma omp parallel for simd
+  for (int is = 0; is < DIM; is++)
+  {
+    
+    //contravariant shear stress
+    float pitt = shearTensor[0][is];
+    float pixx = shearTensor[4][is];
+    float piyy = shearTensor[7][is];
+    float pinn = shearTensor[9][is];
+    
+    //mixed indices pi^mu_mu
+    pixx = -pixx;
+    piyy = -piyy;
+    pinn = -tau * tau * pinn;
+    
+    pi_mu_mu[is] = pitt + pixx + piyy + pinn;
+
+  }
+}

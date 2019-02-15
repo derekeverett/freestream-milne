@@ -251,6 +251,7 @@ else if (params.IC_ENERGY == 5)
   float rescale = 1.0;
   //TEMPORARY
   for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)HBARC + lower_tolerance;
+  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / (float)HBARC;
   //just doing this here for testing - try increasing normalization of initial distribution to improve stability
   //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
@@ -513,6 +514,38 @@ printf("R_Pi_Inv at center : %f \n", R_Pi_Inv[ctr]);
 printf("R_pimunu_Inv at center : %f \n", R_pimunu_Inv[ctr]);
 free(R_Pi_Inv);
 free(R_pimunu_Inv);
+
+
+//check transversality and tracelesness
+//components of pi^munu u_mu
+float *pi_dot_u_tau = NULL;
+pi_dot_u_tau = (float *)calloc(params.DIM, sizeof(float));
+float *pi_dot_u_x = NULL;
+pi_dot_u_x = (float *)calloc(params.DIM, sizeof(float));
+float *pi_dot_u_y = NULL;
+pi_dot_u_y = (float *)calloc(params.DIM, sizeof(float));
+float *pi_dot_u_eta = NULL;
+pi_dot_u_eta = (float *)calloc(params.DIM, sizeof(float));
+
+calculate_pi_dot_u(flowVelocity, shearTensor, pi_dot_u_tau, pi_dot_u_x, pi_dot_u_y, pi_dot_u_eta, params);
+writeScalarToFileProjection(pi_dot_u_tau, "pi_dot_u_tau_projection", params);
+writeScalarToFileProjection(pi_dot_u_x, "pi_dot_u_x_projection", params);
+writeScalarToFileProjection(pi_dot_u_y, "pi_dot_u_y_projection", params);
+writeScalarToFileProjection(pi_dot_u_eta, "pi_dot_u_eta_projection", params);
+
+free(pi_dot_u_tau);
+free(pi_dot_u_x);
+free(pi_dot_u_y);
+free(pi_dot_u_eta);
+
+//trace of pi^munu , pi^mu_mu
+float *pi_mu_mu = NULL;
+pi_mu_mu = (float *)calloc(params.DIM, sizeof(float));
+
+calculate_pi_mu_mu(shearTensor, pi_mu_mu, params);
+writeScalarToFileProjection(pi_mu_mu, "pi_mu_mu_projection", params);
+free(pi_mu_mu);
+
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 
 
