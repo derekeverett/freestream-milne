@@ -226,6 +226,8 @@ void readInParameters(struct parameters &params)
     params.EOS_TYPE = dummyInt;
     fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
     params.E_FREEZE = dummyFloat;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.VISCOUS_MATCHING = dummyInt;
     fclose(fileIn);
   }
 

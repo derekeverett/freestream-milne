@@ -167,6 +167,7 @@ params.DTAU = 0.5;
 params.TAU0 = 0.1;
 params.EOS_TYPE = 1;
 params.E_FREEZE = 1.7;
+params.VISCOUS_MATCHING = 1;
 
 //read in chosen parameters from freestream_input if such a file exists
 readInParameters(params);
@@ -187,6 +188,8 @@ if(PRINT_SCREEN)
     printf("TAU0 = %.2f fm/c\n", params.TAU0);
     printf("SIGMA = %.2f \n", params.SIGMA);
     printf("E_FREEZE = %.3f GeV / fm^3 \n", params.E_FREEZE);
+    if (params.VISCOUS_MATCHING) printf("Will match to hydro including viscous part of Tmunu \n");
+    else printf("Will match to hydro with ideal part of Tmunu \n");
     if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
     else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
     else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
@@ -458,8 +461,14 @@ if (params.BARYON)
 }
 
 calculatePressure(energyDensity, baryonDensity, pressure, params);
-calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
-calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
+
+//viscous currents are nonzero if VISCOUS_MATCHING is on
+if (params.VISCOUS_MATCHING)
+{
+  calculateBulkPressure(stressTensor, energyDensity, pressure, bulkPressure, params);
+  calculateShearViscTensor(stressTensor, energyDensity, flowVelocity, pressure, bulkPressure, shearTensor, params);
+}
+
 
 /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
 if (TEST_INTERPOL)
