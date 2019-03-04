@@ -1,6 +1,11 @@
 #pragma once
 #include <math.h>
 #include "Parameter.h"
+#include <iostream>
+
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_interp2d.h>
+#include <gsl/gsl_spline2d.h>
 
 #ifdef _OPENACC
 #include <accelmath.h>
@@ -8,6 +13,56 @@
 
 #define PI 3.141592654f
 
+float getX(int is, parameters params)
+{
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DX = params.DX;
+
+  int ix = is / (DIM_Y * DIM_ETA);
+  int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+  int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+  float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
+  float x = (float)ix * DX  + xmin;
+
+  return x;
+}
+
+float getY(int is, parameters params)
+{
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DY = params.DY;
+
+  int ix = is / (DIM_Y * DIM_ETA);
+  int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+  int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+  float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
+  float y = (float)iy * DY  + ymin;
+
+  return y;
+}
+
+float getEta(int is, parameters params)
+{
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float DETA = params.DETA;
+
+  int ix = is / (DIM_Y * DIM_ETA);
+  int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
+  int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+
+  float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
+  float eta = (float)ieta * DETA  + etamin;
+
+  return eta;
+}
 
 float linearInterp3D(float x0, float x1, float x2,
                       float a000, float a100, float a010, float a001,
@@ -60,6 +115,35 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
   //float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
+  //for case of 2+1D, set up the bicubic interpolating function of initial density
+  std::cout << "Setting up bicubic splines ..."<< "\n";
+  const gsl_interp2d_type *T = gsl_interp2d_bicubic;
+  double x_vals[DIM_X];
+  double y_vals[DIM_Y];
+  double density_vals[DIM_X * DIM_Y];
+
+  //fill arrays with values of coordinates and density values
+  for (int ix = 0; ix < DIM_X; ix++)
+  {
+    for (int iy = 0; iy < DIM_Y; iy++)
+    {
+      //note that internal indexing in gsl is tranposed!
+      int is = (DIM_Y * ix) + iy;
+      x_vals[ix] = getX(is, params);
+      y_vals[iy] = getY(is, params);
+      int is_gsl = (DIM_X * iy) + ix;
+      density_vals[is_gsl] = density[is][0];
+    }
+  }
+
+  size_t nx = sizeof(x_vals) / sizeof(x_vals[0]);
+  size_t ny = sizeof(y_vals) / sizeof(y_vals[0]);
+  gsl_spline2d *spline = gsl_spline2d_alloc(T, nx, ny);
+  gsl_interp_accel *xacc = gsl_interp_accel_alloc();
+  gsl_interp_accel *yacc = gsl_interp_accel_alloc();
+  gsl_spline2d_init(spline, x_vals, y_vals, density_vals, nx, ny);
+  std::cout << "Bicubic splines initialized..."<< "\n";
+
   #pragma omp parallel for simd
   for (int is = 0; is < DIM; is++)
   {
@@ -85,10 +169,9 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
       {
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
-        //can these trig and hypertrig functions be tabulated ahead of time?
-        //check these for correctness
         //float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
-        float eta_new, x_new, y_new;
+        
+        float eta_new, x_new, y_new; //the shifted coordinates
         if (DIM_ETA == 1)
         {
           eta_new = 0.0;
@@ -101,9 +184,8 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
           x_new   = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
           y_new   = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         }
-        //get fractions for interpolation routine
-        //right now using a linear interpolation, which is gauranteed positive definite
-        //could try cubic spline interpolation?
+
+        //get fractions for linear interpolation routine
         float ix_new = (x_new - xmin) / DX;
         float iy_new = (y_new - ymin) / DY;
         float ieta_new;
@@ -121,21 +203,32 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         //prevent from going out of array bounds!
         if ( (ix_new_f >= 1) && (ix_new_f < DIM_X - 1) && (iy_new_f >= 1) && (iy_new_f < DIM_Y - 1) )
         {
-          float interp = 0.0;
+          float interp = 0.0; //final result
+          float interp_l = 0.0; // result of linear interpolation
+          float interp_c = 0.0; //result of cubic spline interpolation
 
+          //2+1D routine
           if (DIM_ETA == 1)
           {
-            int is_new_00 = (DIM_Y * DIM_ETA * (int)ix_new_f) + (DIM_ETA * (int)iy_new_f) + (int)ieta_new_f;
-            int is_new_10 = (DIM_Y * DIM_ETA * ( (int)ix_new_f + 1) ) + (DIM_ETA * (int)iy_new_f) + (int)ieta_new_f;
-            int is_new_01 = (DIM_Y * DIM_ETA * (int)ix_new_f) + (DIM_ETA * ( (int)iy_new_f + 1) ) + (int)ieta_new_f;
-            int is_new_11 = (DIM_Y * DIM_ETA * ( (int)ix_new_f + 1) ) + (DIM_ETA * ( (int)iy_new_f + 1) ) + (int)ieta_new_f;
+            int is_new_11 = (DIM_Y * DIM_ETA * (int)ix_new_f) + (DIM_ETA * (int)iy_new_f) + (int)ieta_new_f;
+            int is_new_21 = (DIM_Y * DIM_ETA * ( (int)ix_new_f + 1) ) + (DIM_ETA * (int)iy_new_f) + (int)ieta_new_f;
+            int is_new_12 = (DIM_Y * DIM_ETA * (int)ix_new_f) + (DIM_ETA * ( (int)iy_new_f + 1) ) + (int)ieta_new_f;
+            int is_new_22 = (DIM_Y * DIM_ETA * ( (int)ix_new_f + 1) ) + (DIM_ETA * ( (int)iy_new_f + 1) ) + (int)ieta_new_f;
 
-            float a00 = density[is_new_00][irap];
-            float a10 = density[is_new_10][irap];
-            float a01 = density[is_new_01][irap];
             float a11 = density[is_new_11][irap];
+            float a21 = density[is_new_21][irap];
+            float a12 = density[is_new_12][irap];
+            float a22 = density[is_new_22][irap];
 
-            interp = linearInterp2D(x_frac, y_frac, a00, a10, a01, a11);
+            // biinear interpolation
+            interp_l = linearInterp2D(x_frac, y_frac, a11, a21, a12, a22);
+            // bicubic spline interpolation
+            interp_c = gsl_spline2d_eval(spline, x_new, y_new, xacc, yacc);
+
+            //if bicubic spline returns negative, use linear interpolation.
+            if (interp_c > 0.0) interp = interp_c;
+            else interp = interp_l;
+
           }
 
           else if ( (DIM_ETA > 1) && (ieta_new_f >= 1) && (ieta_new_f < DIM_ETA - 1) )

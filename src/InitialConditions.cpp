@@ -138,7 +138,7 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
   //first read in the transverse profile from superMC block data format
   float temp = 0.0;
   std::ifstream superMCFile;
-  superMCFile.open("initial_superMC_ed/2.dat");
+  superMCFile.open("initial_profiles/ed.dat");
   if (superMCFile.is_open())
   {
     for (int ix = 0; ix < DIM_X; ix++)
@@ -180,7 +180,7 @@ void readEnergyDensitySuperMCBlock(float *density, parameters params)
 void readEnergyDensityTRENTOBlock(float *density, parameters params)
 {
   float lower_tolerance = 1.0e-3;
-  
+
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
