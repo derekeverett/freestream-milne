@@ -231,7 +231,7 @@ else if (params.IC_ENERGY == 2)
 }
 else if (params.IC_ENERGY == 3)
 {
-  readDensityFile(initialEnergyDensity, "initial_profiles/e", params);
+  readDensityFile(initialEnergyDensity, (char *)"initial_profiles/e", params);
   if(PRINT_SCREEN) printf("Reading from energy density file in initial_profiles/ \n");
 }
 else if (params.IC_ENERGY == 4)
@@ -280,7 +280,7 @@ if (params.BARYON)
   }
   else if (params.IC_BARYON == 3)
   {
-    readDensityFile(initialChargeDensity, "initial_profiles/nB", params);
+    readDensityFile(initialChargeDensity, (char *)"initial_profiles/nB", params);
     if (PRINT_SCREEN) printf("Reading from baryon density file in initial_profiles/ \n");
   }
   else
@@ -291,10 +291,10 @@ if (params.BARYON)
 }
 
 //write initial energy density and baryon density to file
-writeScalarToFile(initialEnergyDensity, "initial_e", params);
-if (params.BARYON) writeScalarToFile(initialChargeDensity, "initial_nB", params);
-writeScalarToFileProjection(initialEnergyDensity, "initial_e_projection", params);
-if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, "initial_nB_projection", params);
+writeScalarToFile(initialEnergyDensity, (char *)"initial_e", params);
+if (params.BARYON) writeScalarToFile(initialChargeDensity, (char *)"initial_nB", params);
+writeScalarToFileProjection(initialEnergyDensity, (char *)"initial_e_projection", params);
+if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, (char *)"initial_nB_projection", params);
 
 /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
 //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
@@ -304,8 +304,8 @@ if (TEST_INTERPOL)
   printf("Calculating 1 / tau scaled profile for testing \n");
   scaledEnergyDensity = (float *)calloc(params.DIM, sizeof(float));
   for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = initialEnergyDensity[is] * (params.TAU0 / params.TAU);
-  writeScalarToFile(scaledEnergyDensity, "scaled_e", params);
-  writeScalarToFileProjection(scaledEnergyDensity, "scaled_e_projection", params);
+  writeScalarToFile(scaledEnergyDensity, (char *)"scaled_e", params);
+  writeScalarToFileProjection(scaledEnergyDensity, (char *)"scaled_e_projection", params);
 }
 /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
@@ -481,8 +481,8 @@ if (TEST_INTERPOL)
   float c_1 = (TAU0 / tau_i);
   float c_2 = (tau_i - TAU0) / DTAU / tau_i;
   for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = c_1 * initialEnergyDensity[is] + c_2 * ((TAU * energyDensity[is] - TAU0 * initialEnergyDensity[is]));
-  writeScalarToFile(scaledEnergyDensity, "tau_interpolated_e", params);
-  writeScalarToFileProjection(scaledEnergyDensity, "tau_interpolated_e_projection", params);
+  writeScalarToFile(scaledEnergyDensity, (char *)"tau_interpolated_e", params);
+  writeScalarToFileProjection(scaledEnergyDensity, (char *)"tau_interpolated_e_projection", params);
 }
 /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
@@ -516,8 +516,8 @@ float *R_pimunu_Inv = NULL;
 R_pimunu_Inv = (float *)calloc(params.DIM, sizeof(float));
 calculateBulkInvReynolds(pressure, bulkPressure, R_Pi_Inv, params);
 calculateShearInvReynolds(energyDensity, pressure, shearTensor, R_pimunu_Inv, params);
-writeScalarToFileProjection(R_Pi_Inv, "R_Pi_Inv_projection", params);
-writeScalarToFileProjection(R_pimunu_Inv, "R_pimunu_Inv_projection", params);
+writeScalarToFileProjection(R_Pi_Inv, (char *)"R_Pi_Inv_projection", params);
+writeScalarToFileProjection(R_pimunu_Inv, (char *)"R_pimunu_Inv_projection", params);
 int ctr = (DIM_Y * DIM_ETA * ((DIM_X - 1) / 2)) + (DIM_ETA * ((DIM_Y - 1) / 2)) + ((DIM_ETA - 1) / 2);
 printf("R_Pi_Inv at center : %f \n", R_Pi_Inv[ctr]);
 printf("R_pimunu_Inv at center : %f \n", R_pimunu_Inv[ctr]);
@@ -537,10 +537,10 @@ float *pi_dot_u_eta = NULL;
 pi_dot_u_eta = (float *)calloc(params.DIM, sizeof(float));
 
 calculate_pi_dot_u(flowVelocity, shearTensor, pi_dot_u_tau, pi_dot_u_x, pi_dot_u_y, pi_dot_u_eta, params);
-writeScalarToFileProjection(pi_dot_u_tau, "pi_dot_u_tau_projection", params);
-writeScalarToFileProjection(pi_dot_u_x, "pi_dot_u_x_projection", params);
-writeScalarToFileProjection(pi_dot_u_y, "pi_dot_u_y_projection", params);
-writeScalarToFileProjection(pi_dot_u_eta, "pi_dot_u_eta_projection", params);
+writeScalarToFileProjection(pi_dot_u_tau, (char *)"pi_dot_u_tau_projection", params);
+writeScalarToFileProjection(pi_dot_u_x, (char *)"pi_dot_u_x_projection", params);
+writeScalarToFileProjection(pi_dot_u_y, (char *)"pi_dot_u_y_projection", params);
+writeScalarToFileProjection(pi_dot_u_eta, (char *)"pi_dot_u_eta_projection", params);
 
 free(pi_dot_u_tau);
 free(pi_dot_u_x);
@@ -552,7 +552,7 @@ float *pi_mu_mu = NULL;
 pi_mu_mu = (float *)calloc(params.DIM, sizeof(float));
 
 calculate_pi_mu_mu(shearTensor, pi_mu_mu, params);
-writeScalarToFileProjection(pi_mu_mu, "pi_mu_mu_projection", params);
+writeScalarToFileProjection(pi_mu_mu, (char *)"pi_mu_mu_projection", params);
 free(pi_mu_mu);
 
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
@@ -560,53 +560,53 @@ free(pi_mu_mu);
 
 if (PRINT_SCREEN) printf("writing hydro variables\n");
 
-writeScalarToFile(energyDensity, "e", params);
-writeScalarToFile(pressure, "p", params);
-writeScalarToFile(bulkPressure, "bulk_PI", params);
-writeScalarToFileProjection(energyDensity, "e_projection", params);
-writeScalarToFileProjection(pressure, "p_projection", params);
-writeScalarToFileProjection(bulkPressure, "bulk_PI_projection", params);
+writeScalarToFile(energyDensity, (char *)"e", params);
+writeScalarToFile(pressure, (char *)"p", params);
+writeScalarToFile(bulkPressure, (char *)"bulk_PI", params);
+writeScalarToFileProjection(energyDensity, (char *)"e_projection", params);
+writeScalarToFileProjection(pressure, (char *)"p_projection", params);
+writeScalarToFileProjection(bulkPressure, (char *)"bulk_PI_projection", params);
 
-writeVectorToFile(flowVelocity, "u_tau", 0, params);
-writeVectorToFile(flowVelocity, "u_x", 1, params);
-writeVectorToFile(flowVelocity, "u_y", 2,params);
-writeVectorToFile(flowVelocity, "u_eta", 3,params);
+writeVectorToFile(flowVelocity, (char *)"u_tau", 0, params);
+writeVectorToFile(flowVelocity, (char *)"u_x", 1, params);
+writeVectorToFile(flowVelocity, (char *)"u_y", 2,params);
+writeVectorToFile(flowVelocity, (char *)"u_eta", 3,params);
 
-writeVectorToFileProjection(flowVelocity, "u_tau_projection", 0,params);
-writeVectorToFileProjection(flowVelocity, "u_x_projection", 1,params);
-writeVectorToFileProjection(flowVelocity, "u_y_projection", 2,params);
-writeVectorToFileProjection(flowVelocity, "u_eta_projection", 3,params);
+writeVectorToFileProjection(flowVelocity, (char *)"u_tau_projection", 0,params);
+writeVectorToFileProjection(flowVelocity, (char *)"u_x_projection", 1,params);
+writeVectorToFileProjection(flowVelocity, (char *)"u_y_projection", 2,params);
+writeVectorToFileProjection(flowVelocity, (char *)"u_eta_projection", 3,params);
 
 
-writeVectorToFile(shearTensor, "pi_tau_tau", 0,params);
-writeVectorToFile(shearTensor, "pi_tau_x", 1,params);
-writeVectorToFile(shearTensor, "pi_tau_y", 2,params);
-writeVectorToFile(shearTensor, "pi_tau_eta", 3,params);
-writeVectorToFile(shearTensor, "pi_x_x", 4,params);
-writeVectorToFile(shearTensor, "pi_x_y", 5,params);
-writeVectorToFile(shearTensor, "pi_x_eta", 6,params);
-writeVectorToFile(shearTensor, "pi_y_y", 7,params);
-writeVectorToFile(shearTensor, "pi_y_eta", 8,params);
-writeVectorToFile(shearTensor, "pi_eta_eta", 9,params);
+writeVectorToFile(shearTensor, (char *)"pi_tau_tau", 0,params);
+writeVectorToFile(shearTensor, (char *)"pi_tau_x", 1,params);
+writeVectorToFile(shearTensor, (char *)"pi_tau_y", 2,params);
+writeVectorToFile(shearTensor, (char *)"pi_tau_eta", 3,params);
+writeVectorToFile(shearTensor, (char *)"pi_x_x", 4,params);
+writeVectorToFile(shearTensor, (char *)"pi_x_y", 5,params);
+writeVectorToFile(shearTensor, (char *)"pi_x_eta", 6,params);
+writeVectorToFile(shearTensor, (char *)"pi_y_y", 7,params);
+writeVectorToFile(shearTensor, (char *)"pi_y_eta", 8,params);
+writeVectorToFile(shearTensor, (char *)"pi_eta_eta", 9,params);
 
-writeVectorToFileProjection(shearTensor, "pi_tau_tau_projection", 0,params);
-writeVectorToFileProjection(shearTensor, "pi_tau_x_projection", 1,params);
-writeVectorToFileProjection(shearTensor, "pi_tau_y_projection", 2,params);
-writeVectorToFileProjection(shearTensor, "pi_tau_eta_projection", 3,params);
-writeVectorToFileProjection(shearTensor, "pi_x_x_projection", 4,params);
-writeVectorToFileProjection(shearTensor, "pi_x_y_projection", 5,params);
-writeVectorToFileProjection(shearTensor, "pi_x_eta_projection", 6,params);
-writeVectorToFileProjection(shearTensor, "pi_y_y_projection", 7,params);
-writeVectorToFileProjection(shearTensor, "pi_y_eta_projection", 8,params);
-writeVectorToFileProjection(shearTensor, "pi_eta_eta_projection", 9,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_tau_tau_projection", 0,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_tau_x_projection", 1,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_tau_y_projection", 2,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_tau_eta_projection", 3,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_x_x_projection", 4,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_x_y_projection", 5,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_x_eta_projection", 6,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_y_y_projection", 7,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_y_eta_projection", 8,params);
+writeVectorToFileProjection(shearTensor, (char *)"pi_eta_eta_projection", 9,params);
 
 if (params.BARYON)
 {
-  writeScalarToFile(baryonDensity, "nB",params);
-  writeScalarToFileProjection(baryonDensity, "nB_projection",params);
-  writeVectorToFile(baryonDiffusion, "V_x", 1,params);
-  writeVectorToFile(baryonDiffusion, "V_y", 2,params);
-  writeVectorToFile(baryonDiffusion, "V_eta", 3,params);
+  writeScalarToFile(baryonDensity, (char *)"nB",params);
+  writeScalarToFileProjection(baryonDensity, (char *)"nB_projection",params);
+  writeVectorToFile(baryonDiffusion, (char *)"V_x", 1,params);
+  writeVectorToFile(baryonDiffusion, (char *)"V_y", 2,params);
+  writeVectorToFile(baryonDiffusion, (char *)"V_eta", 3,params);
 }
 
 
@@ -671,6 +671,8 @@ if (params.BARYON)
 
 if (PRINT_SCREEN) printf("Done... Goodbye!\n");
 
+//change this to return a different int status if something goes wrong?
+return 0;
 }
 
 #endif  // SRC_FREESTREAMMILNE_
