@@ -289,73 +289,13 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
       flowVelocity[2][is] = 0.0;
       flowVelocity[3][is] = 0.0;
     }
+
+  gsl_matrix_free(gmunu);
+  gsl_matrix_free(Tmunu);
+  gsl_matrix_complex_free(eigen_vectors);
+  gsl_vector_complex_free(eigen_values);
+
   } // for (int is; is < DIM; ...)
-
-  //now regulate the flow velocity by a smoothing procedure. Flow can be too large in dilute regions, cause hydro to crash...
-  //this method doesnt yield a smooth profile
-
-  /*
-  if (REGULATE)
-  {
-    printf("Regulating flow velocity profile in dilute regions \n");
-    #pragma omp parallel for
-    for (int is = 0; is < DIM; is++)
-    {
-      int ix = is / (DIM_Y * DIM_ETA);
-      int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
-      int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
-
-      int stride = 2;
-      int ix_p = ix + stride;
-      int ix_m = ix - stride;
-      int iy_p = iy + stride;
-      int iy_m = iy - stride;
-
-      int is_left   = (DIM_Y * DIM_ETA * ix_m) + (DIM_ETA * iy) + ieta;
-      int is_right  = (DIM_Y * DIM_ETA * ix_p) + (DIM_ETA * iy) + ieta;
-      int is_top    = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy_p) + ieta;
-      int is_bottom = (DIM_Y * DIM_ETA * ix) + (DIM_ETA * iy_m) + ieta;
-
-      if (flowVelocity[0][is] > GAMMA_MAX)
-      {
-        //set the values of this cell to the 'minimum' of its surrounding neighbors
-        flowVelocity[0][is] = std::min( flowVelocity[0][is_left], flowVelocity[0][is_right]  );
-        flowVelocity[0][is] = std::min( flowVelocity[0][is]     , flowVelocity[0][is_top]    );
-        flowVelocity[0][is] = std::min( flowVelocity[0][is]     , flowVelocity[0][is_bottom] );
-
-        if (flowVelocity[0][is] == flowVelocity[0][is_left])
-        {
-          energyDensity[is]   = energyDensity[is_left];
-          flowVelocity[1][is] = flowVelocity[1][is_left];
-          flowVelocity[2][is] = flowVelocity[2][is_left];
-          flowVelocity[3][is] = flowVelocity[3][is_left];
-        }
-        else if (flowVelocity[0][is] == flowVelocity[0][is_right])
-        {
-          energyDensity[is]   = energyDensity[is_right];
-          flowVelocity[1][is] = flowVelocity[1][is_right];
-          flowVelocity[2][is] = flowVelocity[2][is_right];
-          flowVelocity[3][is] = flowVelocity[3][is_right];
-        }
-        else if (flowVelocity[0][is] == flowVelocity[0][is_top])
-        {
-          energyDensity[is]   = energyDensity[is_top];
-          flowVelocity[1][is] = flowVelocity[1][is_top];
-          flowVelocity[2][is] = flowVelocity[2][is_top];
-          flowVelocity[3][is] = flowVelocity[3][is_top];
-        }
-        if (flowVelocity[0][is] == flowVelocity[0][is_bottom])
-        {
-          energyDensity[is]   = energyDensity[is_bottom];
-          flowVelocity[1][is] = flowVelocity[1][is_bottom];
-          flowVelocity[2][is] = flowVelocity[2][is_bottom];
-          flowVelocity[3][is] = flowVelocity[3][is_bottom];
-        }
-
-      } //if (flowVelocity[0][is] > GAMMA_MAX)
-    } //for (int is = 0; is < DIM; is++)
-  }
-  */
 
   //try scaling the flow velocity by a smooth profile which goes to zero after some finite radius
   if (REGULATE)

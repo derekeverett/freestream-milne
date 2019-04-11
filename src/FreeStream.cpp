@@ -170,7 +170,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
 
         //float eta_new = asinh( (TAU0 / TAU) * sinh(eta - rap) ) + rap;
-        
+
         float eta_new, x_new, y_new; //the shifted coordinates
         if (DIM_ETA == 1)
         {
@@ -258,10 +258,15 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
 
           shiftedDensity[is][irap][iphip] = interp;
         }
-      }
-    }
-  }
+      } //for (int iphip = 0; iphip < DIM_PHIP; iphip++)
+    } //for (int irap = 0; irap < DIM_RAP; irap++)
+  } //for (int is = 0; is < DIM; is++)
+
+  gsl_spline2d_free(spline);
+  gsl_interp_accel_free(xacc);
+  gsl_interp_accel_free(yacc);
 }
+
 //this creates the initial G^(tau,tau) function, a function of spatial coordinates and rapidity
 //in the special case if 2+1D, this calculates F^(tau,tau) in the notation of (PRC 91, 064906)
 //rapidity dependence is determined by the assumption for rapidity dependence of the initial distribution function
