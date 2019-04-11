@@ -144,7 +144,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   gsl_spline2d_init(spline, x_vals, y_vals, density_vals, nx, ny);
   std::cout << "Bicubic splines initialized..."<< "\n";
 
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     int ix = is / (DIM_Y * DIM_ETA);

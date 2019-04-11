@@ -9,7 +9,7 @@ void calculateBulkInvReynolds(float *pressure, float *bulkPressure, float *R_Pi_
 {
   int DIM = params.DIM;
   float TAU = params.TAU;
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     float p;
@@ -24,7 +24,7 @@ void calculateShearInvReynolds(float *energyDensity, float *pressure, float **sh
   int DIM = params.DIM;
   float TAU = params.TAU;
   float tau2 = TAU*TAU;
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     float num = shearTensor[0][is]*shearTensor[0][is] - 2.0 * (shearTensor[1][is]*shearTensor[1][is] + shearTensor[2][is]*shearTensor[2][is] + tau2*shearTensor[3][is]*shearTensor[3][is])
@@ -42,7 +42,7 @@ void calculate_pi_dot_u(float **flowVelocity, float **shearTensor, float *pi_dot
 {
   int DIM = params.DIM;
   float tau = params.TAU;
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     //contravariant flow u^mu
@@ -80,7 +80,7 @@ void calculate_pi_mu_mu(float **shearTensor, float *pi_mu_mu, parameters params)
 {
   int DIM = params.DIM;
   float tau = params.TAU;
-  #pragma omp parallel for simd
+  #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
     
