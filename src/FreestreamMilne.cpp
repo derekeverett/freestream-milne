@@ -483,6 +483,7 @@ if (TEST_INTERPOL)
   for (int is = 0; is < params.DIM; is++) scaledEnergyDensity[is] = c_1 * initialEnergyDensity[is] + c_2 * ((TAU * energyDensity[is] - TAU0 * initialEnergyDensity[is]));
   writeScalarToFile(scaledEnergyDensity, (char *)"tau_interpolated_e", params);
   writeScalarToFileProjection(scaledEnergyDensity, (char *)"tau_interpolated_e_projection", params);
+  free(scaledEnergyDensity);
 }
 /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
@@ -492,7 +493,7 @@ if (TEST_INTERPOL)
 ///////////  END LOOP OVER TIME STEPS HERE ////////////////////////
 
 float totalEnergyAfter = 0.0;
-for (int is = 0; is < params.DIM; is++) totalEnergyAfter += energyDensity[is];
+for (int is = 0; is < params.DIM; is++) totalEnergyAfter += stressTensor[0][is];
 if (params.DIM_ETA > 1) totalEnergyAfter *= (params.TAU * params.DX * params.DY * params.DETA);
 else totalEnergyAfter *= (params.TAU * params.DX * params.DY);
 printf("Total energy after streaming : %f \n", totalEnergyAfter);
