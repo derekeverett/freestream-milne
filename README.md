@@ -1,11 +1,16 @@
-freestream-milne simulates the solution of the collisionless Boltzmann Equation assuming
-that the particles are massless and that the initial distribution function is isotropic in azimuthal momentum space (px, py),
-and the initial distribution function has a gaussian form in (y - eta) (3D) or a delta function in (y-eta) (2D).
-Given an initial energy density profile, it computes the stress energy tensor at a later time, in terms of a standard viscous hydro decomposition.
+freestream-milne (c) Derek Everett
 
-openMP is used to accelerate the computation by default.
+## Purpose
+freestream-milne numerically solves the collisionless Boltzmann Equation assuming that
+1. the particles are massless
+2. initial distribution function is isotropic in azimuthal momentum space $px, py$
+3. the initial distribution is a gaussian $(y - \eta)$ in 3D case, or delta function in $(y-\eta)$ in 2D case. 
 
-SETTING PARAMETERS
+Given an initial energy density profile $T^{00}$, it computes the stress energy tensor $T^{\mu\nu}$ at a later time, and also a viscous hydrodynamic decomposition. 
+
+OpenMP is used to accelerate the computation.
+
+## Usage 
 
 Parameters and options can be set in freestream_input, which is read in at run time.
 They are described below
