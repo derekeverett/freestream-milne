@@ -37,6 +37,9 @@ class FREESTREAMMILNE {
     // IS THIS VARIABLE NECESSARY
     int gridSize; //the total number of grid points in x, y, and eta : used for vector memory allocation
 
+    //the total freestreaming time, useful for passing to JETSCAPE
+    float tau_LandauMatch;
+
     //support to initilialize the energy density from a vector - useful for JETSCAPE
     //note units of argument should be GeV / fm^3
     //then we convert to fm^(-4)
@@ -307,8 +310,11 @@ if (params.E_DEP_FS == 1)
   float tau_fs = getEnergyDependentTau(initialEnergyDensity, params);
   printf("Updating to DTAU = %f \n", tau_fs);
   params.DTAU = tau_fs;
-  params.TAU = params.TAU0 + params.DTAU;
+  params.TAU = params.TAU0 + params.DTAU; //update Landau Matching Time
 }
+
+//set the value of the Landau matching time stored in class
+tau_LandauMatch = params.TAU;
 
 /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
 //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
