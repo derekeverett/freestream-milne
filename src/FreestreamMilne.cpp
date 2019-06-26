@@ -4,6 +4,7 @@
 #define SRC_FREESTREAMMILNE_
 
 //#include "Parameter.h"
+#include "Config.h"
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"
@@ -21,12 +22,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-
-#define PI 3.141592654f
-#define PRINT_SCREEN 1 //turn on for program info to print to terminal
-//#define HBARC 0.197326938f
-#define HBARC 0.197326938 //used to convert units of input / output hydro vectors
-#define TEST_INTERPOL 0 //try calculating the profile at intermediate times by interpolating between the initial profile and final (streamed) profile...
 
 using namespace std;
 
@@ -168,6 +163,7 @@ params.TAU0 = 0.1;
 params.EOS_TYPE = 1;
 params.E_FREEZE = 1.7;
 params.VISCOUS_MATCHING = 1;
+params.E_DEP_FS = 0;
 
 //read in chosen parameters from freestream_input if such a file exists
 readInParameters(params);
@@ -193,6 +189,14 @@ if(PRINT_SCREEN)
     if (params.EOS_TYPE == 1) printf("Using EoS : Conformal \n");
     else if (params.EOS_TYPE == 2) printf("Using EoS : Wuppertal-Budhapest \n");
     else if (params.EOS_TYPE == 3) printf("Using EoS : Lattice QCD + HRG matched.\n");
+
+    if (params.E_DEP_FS == 1)
+    {
+      printf("Freestreaming time dependent on transverse energy of profile \n");
+      printf("tau_fs = tau_R * (e_T / e_R) ^ alpha \n");
+      printf("e_R = %f GeV/fm \n", params.E_R);
+      printf("tau_R = %f fm \n", params.TAU_R);
+    }
   }
 //allocate and initialize memory
 if (PRINT_SCREEN) printf("Allocating memory\n");
@@ -295,6 +299,16 @@ writeScalarToFile(initialEnergyDensity, (char *)"initial_e", params);
 if (params.BARYON) writeScalarToFile(initialChargeDensity, (char *)"initial_nB", params);
 writeScalarToFileProjection(initialEnergyDensity, (char *)"initial_e_projection", params);
 if (params.BARYON) writeScalarToFileProjection(initialChargeDensity, (char *)"initial_nB_projection", params);
+
+//calculate transverse energy dependent freestreaming time
+if (params.E_DEP_FS == 1)
+{
+  printf("Calculating transverse energy dependent freestreaming time... \n");
+  float tau_fs = getEnergyDependentTau(initialEnergyDensity, params);
+  printf("Updating to DTAU = %f \n", tau_fs);
+  params.DTAU = tau_fs;
+  params.TAU = params.TAU0 + params.DTAU;
+}
 
 /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
 //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution

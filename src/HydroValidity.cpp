@@ -3,7 +3,7 @@
 #include <stdio.h>
 //#include <math.h>
 #include "Parameter.h"
-#define PI 3.141592654f
+#include "Config.h"
 
 void calculateBulkInvReynolds(float *pressure, float *bulkPressure, float *R_Pi_Inv, parameters params)
 {
@@ -50,12 +50,12 @@ void calculate_pi_dot_u(float **flowVelocity, float **shearTensor, float *pi_dot
     float ux = flowVelocity[1][is];
     float uy = flowVelocity[2][is];
     float un = flowVelocity[3][is];
-    
+
     //covariant flow u_mu
     ux = -ux;
     uy = -uy;
     un = -tau * tau * un;
-    
+
     //contravariant shear stress
     float pitt = shearTensor[0][is];
     float pitx = shearTensor[1][is];
@@ -83,18 +83,18 @@ void calculate_pi_mu_mu(float **shearTensor, float *pi_mu_mu, parameters params)
   #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
-    
+
     //contravariant shear stress
     float pitt = shearTensor[0][is];
     float pixx = shearTensor[4][is];
     float piyy = shearTensor[7][is];
     float pinn = shearTensor[9][is];
-    
+
     //mixed indices pi^mu_mu
     pixx = -pixx;
     piyy = -piyy;
     pinn = -tau * tau * pinn;
-    
+
     pi_mu_mu[is] = pitt + pixx + piyy + pinn;
 
   }

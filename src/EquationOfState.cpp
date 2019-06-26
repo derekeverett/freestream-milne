@@ -1,6 +1,7 @@
 #pragma once
 #include "Parameter.h"
 #include <math.h>
+
 void calculatePressure(float *energyDensity, float *baryonDensity, float *pressure, parameters params)
 {
   int EOS_TYPE = params.EOS_TYPE;

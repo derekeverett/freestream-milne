@@ -23,6 +23,10 @@ struct parameters
   int EOS_TYPE;
   float E_FREEZE;
   int VISCOUS_MATCHING;
+  int E_DEP_FS;
+  float E_R;
+  float TAU_R;
+  float ALPHA;
   //these are computed based on the chosen parameters above; they are constrained
   int DIM;
   float TAU;

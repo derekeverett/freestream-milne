@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include "Parameter.h"
+#include "Config.h"
 #include <math.h>
 
 #define MINX 0
@@ -228,6 +229,19 @@ void readInParameters(struct parameters &params)
     params.E_FREEZE = dummyFloat;
     fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
     params.VISCOUS_MATCHING = dummyInt;
+
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.E_DEP_FS = dummyInt;
+
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.E_R = dummyFloat;
+
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.TAU_R = dummyFloat;
+
+    fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
+    params.ALPHA = dummyFloat;
+
     fclose(fileIn);
   }
 

@@ -9,7 +9,7 @@
 #include <gsl/gsl_sort_vector.h>
 //#include <math.h>
 #include "Parameter.h"
-#define PI 3.141592654f
+
 #define REGULATE 0 // 1 for hard regulation of flow in dilute regions
 #define GAMMA_MAX 100.0
 

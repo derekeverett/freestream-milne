@@ -1,6 +1,7 @@
 #pragma once
 #include <math.h>
 #include "Parameter.h"
+#include "Config.h"
 #include <iostream>
 
 #include <gsl/gsl_math.h>
@@ -11,7 +12,6 @@
 #include <accelmath.h>
 #endif
 
-#define PI 3.141592654f
 
 float getX(int is, parameters params)
 {
@@ -368,4 +368,24 @@ void convertInitialChargeDensity(float *initialChargeDensity, float **chargeDens
     }
 
   }
+}
+
+float getEnergyDependentTau(float *initialEnergyDensity, parameters params)
+{
+  float tau_R = params.TAU_R;
+  float e_R = params.E_R;
+  float alpha = params.ALPHA;
+  float e_T = 0.0;
+  int DIM = params.DIM;
+  float dx = params.DX;
+  float dy = params.DY;
+
+  //integrate over transverse plane to find transverse energy
+  for (int is = 0; is < DIM; is++) e_T += initialEnergyDensity[is]; //fm^-4
+  e_T = e_T * dx * dy;
+
+  e_T = e_T * HBARC; // Multiply by hbarc for same units as e_R 
+
+  float tau_fs = tau_R * pow( (e_T / e_R), alpha );
+  return tau_fs;
 }

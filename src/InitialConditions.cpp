@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include "Parameter.h"
+
 #define THETA_FUNCTION(X) ((float)X < (float)0 ? (float)0 : (float)1)
 
 void initializeZero(float *density, parameters params)
