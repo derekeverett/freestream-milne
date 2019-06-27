@@ -1,7 +1,7 @@
 #pragma once
 #include <math.h>
 #include "Parameter.h"
-#include "Config.h"
+#include "FSConfig.h"
 #include <iostream>
 
 #include <gsl/gsl_math.h>

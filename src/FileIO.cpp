@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include "Parameter.h"
-#include "Config.h"
+#include "FSConfig.h"
 #include <math.h>
 
 #define MINX 0

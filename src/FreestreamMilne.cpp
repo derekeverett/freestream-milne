@@ -4,7 +4,7 @@
 #define SRC_FREESTREAMMILNE_
 
 //#include "Parameter.h"
-#include "Config.h"
+#include "FSConfig.h"
 #include "FreeStream.cpp"
 #include "InitialConditions.cpp"
 #include "LandauMatch.cpp"

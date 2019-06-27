@@ -3,7 +3,7 @@
 #include <stdio.h>
 //#include <math.h>
 #include "Parameter.h"
-#include "Config.h"
+#include "FSConfig.h"
 
 void calculateBulkInvReynolds(float *pressure, float *bulkPressure, float *R_Pi_Inv, parameters params)
 {
