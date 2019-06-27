@@ -31,7 +31,7 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
     for (int iphip = 0; iphip < DIM_PHIP; iphip++)
     {
-      float phip = float(iphip) * (2.0 * PI) / float(DIM_PHIP);
+      float phip = float(iphip) * (2.0 * M_PI) / float(DIM_PHIP);
 
       for (int ieta = 0; ieta < DIM_ETA; ieta++)
       {
@@ -40,7 +40,7 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
-        float rap = eta + tan((PI / 2.0) * w );
+        float rap = eta + tan((M_PI / 2.0) * w );
         if (DIM_ETA == 1) rap = 0.0;
         //try evaluating at values of rapidity y centered around y ~= eta
         //if (DIM_ETA > 1) rap = rap + eta;
@@ -73,7 +73,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
   //float TAU = params.TAU;
   float weight_rap;
 
-  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+  float d_phip = (2.0 * M_PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 10; ivar++)
   {
@@ -92,7 +92,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
 
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
-        float jacobian = (PI/2.0) / cos( (PI/2.0)*w ) / cos( (PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
+        float jacobian = (M_PI/2.0) / cos( (M_PI/2.0)*w ) / cos( (M_PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
 
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
@@ -119,7 +119,7 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
   int DIM = params.DIM;
   float DRAP = params.DRAP;
 
-  float d_phip = (2.0 * PI) / float(DIM_PHIP);
+  float d_phip = (2.0 * M_PI) / float(DIM_PHIP);
 
   for (int ivar = 0; ivar < 4; ivar++)
   {
