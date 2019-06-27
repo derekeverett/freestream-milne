@@ -376,6 +376,8 @@ float getEnergyDependentTau(float *initialEnergyDensity, parameters params)
   float e_R = params.E_R;
   float alpha = params.ALPHA;
   float e_T = 0.0;
+  float hbarc = 0.197326938;
+  
   int DIM = params.DIM;
   float dx = params.DX;
   float dy = params.DY;
@@ -384,7 +386,7 @@ float getEnergyDependentTau(float *initialEnergyDensity, parameters params)
   for (int is = 0; is < DIM; is++) e_T += initialEnergyDensity[is]; //fm^-4
   e_T = e_T * dx * dy;
 
-  e_T = e_T * HBARC; // Multiply by hbarc for same units as e_R
+  e_T = e_T * hbarc; // Multiply by hbarc for same units as e_R
 
   float tau_fs = tau_R * pow( (e_T / e_R), alpha );
   return tau_fs;

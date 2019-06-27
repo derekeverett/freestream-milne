@@ -10,9 +10,6 @@
 //#include <math.h>
 #include "Parameter.h"
 
-#define REGULATE 0 // 1 for hard regulation of flow in dilute regions
-#define GAMMA_MAX 100.0
-
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
   int DIM_RAP = params.DIM_RAP;
@@ -157,6 +154,8 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
   float tolerance = 1.0e-7;
 
+  float gamma_max = 100.0; // the maximum allowed flow boost factor when searching for eigenvectors 
+
   #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
   {
@@ -240,7 +239,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
           if (GSL_REAL(v0) < 0) factor=-factor;
 
           //ignore eigenvectors with gamma too large
-          if ( (GSL_REAL(v0) * factor) < GAMMA_MAX)
+          if ( (GSL_REAL(v0) * factor) < gamma_max)
           {
             eigenvalue_exists = 1;
             energyDensity[is] = GSL_REAL(eigenvalue);
@@ -298,6 +297,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   } // for (int is; is < DIM; ...)
 
   //try scaling the flow velocity by a smooth profile which goes to zero after some finite radius
+  /*
   if (REGULATE)
   {
     printf("Regulating flow velocity profile in dilute regions \n");
@@ -325,6 +325,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     }
 
   }
+  */
 
 } //solveEigenSystem()
 void calculateBulkPressure(float **stressTensor, float *energyDensity, float *pressure, float *bulkPressure, parameters params)

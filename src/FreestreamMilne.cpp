@@ -138,6 +138,8 @@ void FREESTREAMMILNE::output_to_vectors(std::vector<double> &energy_density_out,
 //where the magic happens
 int FREESTREAMMILNE::run_freestream_milne() {
 
+float hbarc = 0.197326938;
+
 if(PRINT_SCREEN) printf("Welcome to freestream-milne\n");
 
 //declare parameter struct
@@ -252,16 +254,11 @@ else if (params.IC_ENERGY == 5)
   //note that this is not safe - if one passes an empty vector it will not throw an error
   //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
-  //do a value copy
 
-  //try adding a small value everywhere to regulate problems with flow velocity in dilute regions
-
-  //TEMPORARY
   //rescale initial distribution
   float rescale = 1.0;
-  //TEMPORARY
-  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)HBARC + lower_tolerance;
-  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / (float)HBARC;
+  for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)hbarc + lower_tolerance;
+  //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] / (float)hbarc;
   //just doing this here for testing - try increasing normalization of initial distribution to improve stability
   //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
@@ -522,7 +519,7 @@ printf("Total energy after streaming : %f \n", totalEnergyAfter);
 float totalEnergyInsideHypersurf = 0.0;
 for (int is = 0; is < params.DIM; is++)
 {
-  if ( (energyDensity[is] * HBARC) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
+  if ( (energyDensity[is] * hbarc) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
 }
 if (params.DIM_ETA > 1) totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY * params.DETA);
 else totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY);
@@ -655,23 +652,23 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
   for (int is = 0; is < params.DIM; is++)
   {
     //converting back to GeV / fm^3 for use in JETSCAPE
-    final_energy_density[is] = (double)energyDensity[is] * HBARC;
-    final_pressure[is] = (double)pressure[is] * HBARC;
+    final_energy_density[is] = (double)energyDensity[is] * hbarc;
+    final_pressure[is] = (double)pressure[is] * hbarc;
     final_ut[is] = (double)flowVelocity[0][is];
     final_ux[is] = (double)flowVelocity[1][is];
     final_uy[is] = (double)flowVelocity[2][is];
     final_un[is] = (double)flowVelocity[3][is];
-    final_pitt[is] = (double)shearTensor[0][is] * HBARC;
-    final_pitx[is] = (double)shearTensor[1][is] * HBARC;
-    final_pity[is] = (double)shearTensor[2][is] * HBARC;
-    final_pitn[is] = (double)shearTensor[3][is] * HBARC;
-    final_pixx[is] = (double)shearTensor[4][is] * HBARC;
-    final_pixy[is] = (double)shearTensor[5][is] * HBARC;
-    final_pixn[is] = (double)shearTensor[6][is] * HBARC;
-    final_piyy[is] = (double)shearTensor[7][is] * HBARC;
-    final_piyn[is] = (double)shearTensor[8][is] * HBARC;
-    final_pinn[is] = (double)shearTensor[9][is] * HBARC;
-    final_Pi[is] = (double)bulkPressure[is] * HBARC;
+    final_pitt[is] = (double)shearTensor[0][is] * hbarc;
+    final_pitx[is] = (double)shearTensor[1][is] * hbarc;
+    final_pity[is] = (double)shearTensor[2][is] * hbarc;
+    final_pitn[is] = (double)shearTensor[3][is] * hbarc;
+    final_pixx[is] = (double)shearTensor[4][is] * hbarc;
+    final_pixy[is] = (double)shearTensor[5][is] * hbarc;
+    final_pixn[is] = (double)shearTensor[6][is] * hbarc;
+    final_piyy[is] = (double)shearTensor[7][is] * hbarc;
+    final_piyn[is] = (double)shearTensor[8][is] * hbarc;
+    final_pinn[is] = (double)shearTensor[9][is] * hbarc;
+    final_Pi[is] = (double)bulkPressure[is] * hbarc;
   }
 }
 
