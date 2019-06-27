@@ -12,7 +12,6 @@
 #include <accelmath.h>
 #endif
 
-
 float getX(int is, parameters params)
 {
   int DIM_X = params.DIM_X;
@@ -375,17 +374,25 @@ float getEnergyDependentTau(float *initialEnergyDensity, parameters params)
   float tau_R = params.TAU_R;
   float e_R = params.E_R;
   float alpha = params.ALPHA;
-  float e_T = 0.0;
   float hbarc = 0.197326938;
-  
+
   int DIM = params.DIM;
   float dx = params.DX;
   float dy = params.DY;
 
-  //integrate over transverse plane to find transverse energy
-  for (int is = 0; is < DIM; is++) e_T += initialEnergyDensity[is]; //fm^-4
-  e_T = e_T * dx * dy;
+  //integrate over transverse plane to find transverse averaged energy density
+  //defined by (int dx dy (eps^2) ) / (int dx dy eps)
+  float numerator = 0.0;
+  float denominator = 0.0;
 
+  for (int is = 0; is < DIM; is++)
+  {
+    float eps = initialEnergyDensity[is]; // Multiply by hbarc for same units as e_R
+    numerator += (eps*eps);
+    denominator += eps;
+  }
+
+  float e_T = numerator / (denominator + 1.0e-7); 
   e_T = e_T * hbarc; // Multiply by hbarc for same units as e_R
 
   float tau_fs = tau_R * pow( (e_T / e_R), alpha );
