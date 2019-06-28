@@ -254,7 +254,13 @@ else if (params.IC_ENERGY == 5)
   //note that this is not safe - if one passes an empty vector it will not throw an error
   //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
-
+  
+  //check that the vector has the same dimensions as defined in freestream_input!
+  if ( params.DIM != init_energy_density.size() )
+    {
+      printf("Grid dimension of input vector does not match freestream_input file! \n");
+      exit(-1);
+    }
   //rescale initial distribution
   float rescale = 1.0;
   for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i] * rescale / (float)hbarc + lower_tolerance;
