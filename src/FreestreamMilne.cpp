@@ -259,6 +259,7 @@ else if (params.IC_ENERGY == 5)
   if ( params.DIM != init_energy_density.size() )
     {
       printf("Grid dimension of input vector does not match freestream_input file! \n");
+      printf("Vector size : %d , DIM = %d \n", init_energy_density.size(), params.DIM);
       exit(-1);
     }
   //rescale initial distribution
