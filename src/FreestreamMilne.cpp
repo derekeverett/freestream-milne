@@ -313,6 +313,13 @@ if (params.E_DEP_FS == 1)
 //set the value of the Landau matching time stored in class
 tau_LandauMatch = params.TAU;
 
+//now reset the number of points in phip based on freestreaming time
+float min_dx_dy = min(params.DX, params.DY);
+int nphip = int( ceil( (2.0 * M_PI * params.DTAU) / min_dx_dy ) );
+if (nphip > params.DIM_PHIP) printf("Updating number of points in phi_p to %d based on arc length \n", nphip);
+params.DIM_PHIP = max(params.DIM_PHIP, nphip);
+
+
 /////////////////////////////BEGIN TESTING FOR JETSCAPE//////////////////////////////
 //make a toy plot of 1/tau * initial energy density to compare 2+1D freestreaming with only longitudinal (bjorken) dilution
 float *scaledEnergyDensity = NULL;
