@@ -254,7 +254,7 @@ else if (params.IC_ENERGY == 5)
   //note that this is not safe - if one passes an empty vector it will not throw an error
   //converting units of energy density from GeV / fm^3 to fm^(-4)
   if(PRINT_SCREEN) printf("Reading energy density from initial energy density vector\n");
-  
+
   //check that the vector has the same dimensions as defined in freestream_input!
   if ( params.DIM != init_energy_density.size() )
     {
@@ -533,11 +533,20 @@ printf("Total energy after streaming : %f \n", totalEnergyAfter);
 float totalEnergyInsideHypersurf = 0.0;
 for (int is = 0; is < params.DIM; is++)
 {
-  if ( (energyDensity[is] * hbarc) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
+  //if ( (energyDensity[is] * hbarc) > params.E_FREEZE) totalEnergyInsideHypersurf += energyDensity[is];
+  if ( (energyDensity[is] * hbarc) > params.E_FREEZE) totalEnergyInsideHypersurf += stressTensor[0][is];
 }
 if (params.DIM_ETA > 1) totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY * params.DETA);
 else totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY);
 printf("Fraction of energy contained in Freezeout Hypersurface : %f \n", totalEnergyInsideHypersurf / totalEnergyAfter);
+
+
+//write these to file
+ofstream energy_file;
+energy_file.open ("output/check_energy_conservation.dat");
+energy_file << totalEnergyAfter * hbarc<< endl;
+energy_file << totalEnergyInsideHypersurf * hbarc<< endl;
+energy_file.close();
 
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 //bulk inv reynolds #
