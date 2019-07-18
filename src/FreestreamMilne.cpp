@@ -346,7 +346,7 @@ float totalEnergy = 0.0;
 for (int is = 0; is < params.DIM; is++) totalEnergy += initialEnergyDensity[is];
 if (params.DIM_ETA > 1) totalEnergy *= (params.TAU0 * params.DX * params.DY * params.DETA);
 else totalEnergy *= (params.DX * params.DY);
-printf("Total energy before streaming : %f \n", totalEnergy);
+printf("Total energy on grid before streaming : %f \n", totalEnergy);
 
 //convert the energy density profile into the initial density profile to be streamed and free memory
 convertInitialDensity(initialEnergyDensity, density, params);
@@ -527,7 +527,7 @@ float totalEnergyAfter = 0.0;
 for (int is = 0; is < params.DIM; is++) totalEnergyAfter += stressTensor[0][is];
 if (params.DIM_ETA > 1) totalEnergyAfter *= (params.TAU * params.DX * params.DY * params.DETA);
 else totalEnergyAfter *= (params.TAU * params.DX * params.DY);
-printf("Total energy after streaming : %f \n", totalEnergyAfter);
+printf("Total energy on grid after streaming : %f \n", totalEnergyAfter);
 
 //check which fraction of total energy lies within freezeout surface, which lies in 'corona'
 float totalEnergyInsideHypersurf = 0.0;
@@ -540,12 +540,11 @@ if (params.DIM_ETA > 1) totalEnergyInsideHypersurf *= (params.TAU * params.DX * 
 else totalEnergyInsideHypersurf *= (params.TAU * params.DX * params.DY);
 printf("Fraction of energy contained in Freezeout Hypersurface : %f \n", totalEnergyInsideHypersurf / totalEnergyAfter);
 
-
 //write these to file
 ofstream energy_file;
-energy_file.open ("output/check_energy_conservation.dat");
-energy_file << totalEnergyAfter * hbarc<< endl;
-energy_file << totalEnergyInsideHypersurf * hbarc<< endl;
+energy_file.open ("output/energy_inside_switch_surf.dat");
+//energy_file << totalEnergyAfter * hbarc<< endl;
+energy_file << totalEnergyInsideHypersurf * hbarc << endl;
 energy_file.close();
 
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
