@@ -269,6 +269,11 @@ else if (params.IC_ENERGY == 5)
   //just doing this here for testing - try increasing normalization of initial distribution to improve stability
   //for (int i = 0; i < params.DIM; i++) initialEnergyDensity[i] = init_energy_density[i];
 }
+else if (params.IC_ENERGY == 6)
+{
+  printf("Initializing with 2 MC Gaussians \n");
+  initialize2Gaussians(initialEnergyDensity, 1.0, 1.0, 1.0, params);
+}
 else
 {
   printf("Not a valid initial Condition... Goodbye\n");

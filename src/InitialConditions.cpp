@@ -245,7 +245,7 @@ void initialize2Gaussians(float *density, float bx, float by, float beta, parame
   float DY = params.DY;
   float DETA = params.DETA;
 
-  float e0 = 500.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
+  float e0 = 0.0; //energy norm factor in fm^(-4) : roughly 500 MeV Temperature
 
   for (int is = 0; is < DIM; is++)
   {
@@ -267,6 +267,7 @@ void initialize2Gaussians(float *density, float bx, float by, float beta, parame
     float eta2 = 0.0;
     density[is] = e0 * (exp(-(1.0 / bx) * ((x-x1) * (x-x1))) * exp(-(1.0 / by) * ((y-y1) * (y-y1))) * exp(-(1.0 / beta) * ((eta-eta1) * (eta-eta1)))
       + exp(-(1.0 / bx) * ((x-x2) * (x-x2))) * exp(-(1.0 / by) * ((y-y2) * (y-y2))) * exp(-(1.0 / beta) * ((eta-eta2) * (eta-eta2))) );
+    density[is] *= ((float)rand() / RAND_MAX);
   }
 }
 

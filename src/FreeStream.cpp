@@ -7,6 +7,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline2d.h>
+#include <gsl/gsl_errno.h>
 
 #ifdef _OPENACC
 #include <accelmath.h>
@@ -114,6 +115,9 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
   //float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
 
+  //this is to avoid GSL failure in very rare cases when freestreaming time is long for fluctuating events
+  //gsl_error_handler_t * gsl_set_error_handler_off();
+
   //for case of 2+1D, set up the bicubic interpolating function of initial density
   std::cout << "Setting up bicubic splines ..."<< "\n";
   const gsl_interp2d_type *T = gsl_interp2d_bicubic;
@@ -134,6 +138,12 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
       density_vals[is_gsl] = density[is][0];
     }
   }
+
+  double x_min_interp = x_vals[0];
+  double y_min_interp = y_vals[0];
+
+  double x_max_interp = x_vals[DIM_X-1];
+  double y_max_interp = y_vals[DIM_Y-1];
 
   size_t nx = sizeof(x_vals) / sizeof(x_vals[0]);
   size_t ny = sizeof(y_vals) / sizeof(y_vals[0]);
@@ -222,7 +232,14 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
             // biinear interpolation
             interp_l = linearInterp2D(x_frac, y_frac, a11, a21, a12, a22);
             // bicubic spline interpolation
-            interp_c = gsl_spline2d_eval(spline, x_new, y_new, xacc, yacc);
+
+            //first make sure x_new and y_new are inside bounds of interpolation
+            if ( (x_min_interp < x_new) && (x_new < x_max_interp) && (y_min_interp < y_new) && (y_new < y_max_interp) )
+            {
+              //call bicubic interpolation
+              interp_c = gsl_spline2d_eval(spline, x_new, y_new, xacc, yacc);
+            }
+            else interp_c = 0.0; //return zero will force us to use linear interpolation
 
             //if bicubic spline returns negative, use linear interpolation.
             if (interp_c > 0.0) interp = interp_c;
@@ -392,7 +409,7 @@ float getEnergyDependentTau(float *initialEnergyDensity, parameters params)
     denominator += eps;
   }
 
-  float e_T = numerator / (denominator + 1.0e-7); 
+  float e_T = numerator / (denominator + 1.0e-7);
   e_T = e_T * hbarc; // Multiply by hbarc for same units as e_R
 
   float tau_fs = tau_R * pow( (e_T / e_R), alpha );
