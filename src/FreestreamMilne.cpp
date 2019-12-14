@@ -654,6 +654,7 @@ writeVectorToFileProjection(shearTensor, (char *)"pi_y_eta_projection", 8,params
 writeVectorToFileProjection(shearTensor, (char *)"pi_eta_eta_projection", 9,params);
 
 writeVectorToFileProjection(thermalVorticityTensor, (char *)"w_xy_projection", 3, params);
+writeVectorToFile(thermalVorticityTensor, (char *)"w_xy", 3, params);
 
 if (params.BARYON)
 {
