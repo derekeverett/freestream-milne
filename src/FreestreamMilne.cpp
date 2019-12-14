@@ -603,6 +603,14 @@ free(pi_mu_mu);
 //////////////////////////////////HYDRO VALIDITY//////////////////////////////////
 
 
+
+////////////////////////////////////VORTICITY/////////////////////////////////////
+
+float **thermalVorticityTensor = NULL;
+thermalVorticityTensor = calloc2dArrayf(thermalVorticityTensor, 6, params.DIM);
+calculateThermalVorticityTensor(energyDensity, flowVelocity, thermalVorticityTensor, params);
+
+
 if (PRINT_SCREEN) printf("writing hydro variables\n");
 
 writeScalarToFile(energyDensity, (char *)"e", params);
@@ -644,6 +652,8 @@ writeVectorToFileProjection(shearTensor, (char *)"pi_x_eta_projection", 6,params
 writeVectorToFileProjection(shearTensor, (char *)"pi_y_y_projection", 7,params);
 writeVectorToFileProjection(shearTensor, (char *)"pi_y_eta_projection", 8,params);
 writeVectorToFileProjection(shearTensor, (char *)"pi_eta_eta_projection", 9,params);
+
+writeVectorToFileProjection(thermalVorticityTensor, (char *)"w_xy_projection", 3, params);
 
 if (params.BARYON)
 {
@@ -701,6 +711,7 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 
 //free the memory
 free2dArrayf(stressTensor, 10);
+free2dArrayf(thermalVorticityTensor, 6);
 free(energyDensity);
 free2dArrayf(flowVelocity, 4);
 free(pressure);

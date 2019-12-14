@@ -78,3 +78,14 @@ void calculatePressure(float *energyDensity, float *baryonDensity, float *pressu
     }
   }
 }
+
+//the conformal EoS only!
+float temperatureFromEnergyDensity(float eps)
+{
+  // EoS : eps = a T^4
+  // tau_iso = 5 eta / (s T)
+  //float a = 15.6269; // Nc=3, Nf=3
+  float a = 13.8997; // Nc=3, Nf=2.5
+  float T = powf( (eps/a), 0.25);
+  return T;
+}

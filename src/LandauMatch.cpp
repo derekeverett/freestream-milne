@@ -9,6 +9,7 @@
 #include <gsl/gsl_sort_vector.h>
 //#include <math.h>
 #include "Parameter.h"
+#include "EquationOfState.cpp"
 
 void calculateHypertrigTable(float ****hypertrigTable, parameters params)
 {
@@ -154,7 +155,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
 
   float tolerance = 1.0e-7;
 
-  float gamma_max = 100.0; // the maximum allowed flow boost factor when searching for eigenvectors 
+  float gamma_max = 100.0; // the maximum allowed flow boost factor when searching for eigenvectors
 
   #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
@@ -386,6 +387,98 @@ void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, fl
     for (int is = 0; is < DIM; is++)
     {
       baryonDiffusion[ivar][is] = baryonCurrent[ivar][is] - (baryonDensity[is] * flowVelocity[ivar][is]);
+    }
+  }
+}
+
+
+void calculateThermalVorticityTensor(float *energyDensity, float **flowVelocity, float **thermalVorticityTensor, parameters params)
+{
+
+  // omega_{\mu\nu} = 1/2 ( d_{\nu} \beta{\mu} - d{\mu} \beta_{\nu})
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  float dx = params.DX;
+  float dy = params.DY;
+  float tau = params.TAU;
+  #pragma omp parallel for
+  for (int ix = 1; ix < DIM_X - 1; ix++)
+  {
+    for (int iy = 1; iy < DIM_Y - 1; iy++)
+    {
+      int is = (DIM_Y) * ix + iy;
+      int is_px = (DIM_Y) * (ix + 1) + iy;
+      int is_mx = (DIM_Y) * (ix - 1) + iy;
+      int is_py = (DIM_Y) * ix + (iy + 1);
+      int is_my = (DIM_Y) * ix + (iy - 1);
+
+      // omega_{\mu\nu} = 1/2 ( d_{\nu} \beta{\mu} - d{\mu} \beta_{\nu})
+      //antisymmetric tensor, calculate 6 components (upper triangular)
+      //calculate the thermal flow vector \beta_{\mu}
+
+      float u_t = flowVelocity[0][is];
+      float u_t_px = flowVelocity[0][is_px];
+      float u_t_mx = flowVelocity[0][is_mx];
+      float u_t_py = flowVelocity[0][is_py];
+      float u_t_my = flowVelocity[0][is_my];
+
+      float u_x = -flowVelocity[1][is];
+      float u_x_px = -flowVelocity[1][is_px];
+      float u_x_mx = -flowVelocity[1][is_mx];
+      float u_x_py = -flowVelocity[1][is_py];
+      float u_x_my = -flowVelocity[1][is_my];
+
+      float u_y = -flowVelocity[2][is];
+      float u_y_px = -flowVelocity[2][is_px];
+      float u_y_mx = -flowVelocity[2][is_mx];
+      float u_y_py = -flowVelocity[2][is_py];
+      float u_y_my = -flowVelocity[2][is_my];
+
+      float u_n = 0.0;
+      float u_n_px = 0.0;
+      float u_n_mx = 0.0;
+      float u_n_py = 0.0;
+      float u_n_my = 0.0;
+
+      float T = temperatureFromEnergyDensity(energyDensity[is]);
+      float T_px = temperatureFromEnergyDensity(energyDensity[is_px]);
+      float T_mx = temperatureFromEnergyDensity(energyDensity[is_mx]);
+      float T_py = temperatureFromEnergyDensity(energyDensity[is_py]);
+      float T_my = temperatureFromEnergyDensity(energyDensity[is_my]);
+
+      float beta_t = T * u_t;
+      float beta_x = T * u_x;
+      float beta_y = T * u_y;
+      float beta_n = T * u_n;
+
+      float beta_t_px = T_px * u_t_px;
+      float beta_x_px = T_px * u_x_px;
+      float beta_y_px = T_px * u_y_px;
+      float beta_n_px = T_px * u_n_px;
+
+      float beta_t_mx = T_mx * u_t_mx;
+      float beta_x_mx = T_mx * u_x_mx;
+      float beta_y_mx = T_mx * u_y_mx;
+      float beta_n_mx = T_mx * u_n_mx;
+
+      float beta_t_py = T_py * u_t_py;
+      float beta_x_py = T_py * u_x_py;
+      float beta_y_py = T_py * u_y_py;
+      float beta_n_py = T_py * u_n_py;
+
+      float beta_t_my = T_my * u_t_my;
+      float beta_x_my = T_my * u_x_my;
+      float beta_y_my = T_my * u_y_my;
+      float beta_n_my = T_my * u_n_my;
+
+      //NOTE NEED TO FIX THESE, for the temporal derivatives we need to evolve for another time step
+      thermalVorticityTensor[0][is] = 0.0; // w_tx
+      thermalVorticityTensor[1][is] = 0.0; // w_ty
+      thermalVorticityTensor[2][is] = 0.0; // w_tn
+      thermalVorticityTensor[3][is] = 0.5 * ( (beta_x_py - beta_x_my) / 2.0 / dy - (beta_y_px - beta_y_mx) / 2.0 / dx ); // w_xy
+      thermalVorticityTensor[4][is] = 0.0; // w_xn
+      thermalVorticityTensor[5][is] = 0.0; // w_yn
     }
   }
 }
