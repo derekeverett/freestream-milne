@@ -85,7 +85,10 @@ float temperatureFromEnergyDensity(float eps)
   // EoS : eps = a T^4
   // tau_iso = 5 eta / (s T)
   //float a = 15.6269; // Nc=3, Nf=3
+
+  //this choice matches the dof in the conformal EOS in cpu-vh!
   float a = 13.8997; // Nc=3, Nf=2.5
+  
   float T = powf( (eps/a), 0.25);
   return T;
 }

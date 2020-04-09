@@ -245,8 +245,8 @@ else if (params.IC_ENERGY == 3)
 }
 else if (params.IC_ENERGY == 4)
 {
-  readEnergyDensitySuperMCBlock(initialEnergyDensity, params);
-  if(PRINT_SCREEN) printf("Reading from superMC energy density file in initial_profiles/ \n");
+  readEnergyDensityCPUVH(initialEnergyDensity, params);
+  if(PRINT_SCREEN) printf("Reading from energy density file in initial_profiles/ \n");
 }
 else if (params.IC_ENERGY == 5)
 {
@@ -608,7 +608,9 @@ free(pi_mu_mu);
 
 float **thermalVorticityTensor = NULL;
 thermalVorticityTensor = calloc2dArrayf(thermalVorticityTensor, 6, params.DIM);
-calculateThermalVorticityTensor(energyDensity, flowVelocity, thermalVorticityTensor, params);
+float **thermalVelocityVector = NULL;
+thermalVelocityVector = calloc2dArrayf(thermalVelocityVector, 4, params.DIM);
+calculateThermalVorticityTensor(energyDensity, flowVelocity, thermalVelocityVector, thermalVorticityTensor, params);
 
 
 if (PRINT_SCREEN) printf("writing hydro variables\n");
@@ -620,38 +622,43 @@ writeScalarToFileProjection(energyDensity, (char *)"e_projection", params);
 writeScalarToFileProjection(pressure, (char *)"p_projection", params);
 writeScalarToFileProjection(bulkPressure, (char *)"bulk_PI_projection", params);
 
-writeVectorToFile(flowVelocity, (char *)"u_tau", 0, params);
-writeVectorToFile(flowVelocity, (char *)"u_x", 1, params);
-writeVectorToFile(flowVelocity, (char *)"u_y", 2,params);
-writeVectorToFile(flowVelocity, (char *)"u_eta", 3,params);
+writeVectorToFile(flowVelocity, (char *)"ut", 0, params);
+writeVectorToFile(flowVelocity, (char *)"ux", 1, params);
+writeVectorToFile(flowVelocity, (char *)"uy", 2,params);
+writeVectorToFile(flowVelocity, (char *)"un", 3,params);
 
-writeVectorToFileProjection(flowVelocity, (char *)"u_tau_projection", 0,params);
-writeVectorToFileProjection(flowVelocity, (char *)"u_x_projection", 1,params);
-writeVectorToFileProjection(flowVelocity, (char *)"u_y_projection", 2,params);
-writeVectorToFileProjection(flowVelocity, (char *)"u_eta_projection", 3,params);
+writeVectorToFileProjection(flowVelocity, (char *)"ut_projection", 0,params);
+writeVectorToFileProjection(flowVelocity, (char *)"ux_projection", 1,params);
+writeVectorToFileProjection(flowVelocity, (char *)"uy_projection", 2,params);
+writeVectorToFileProjection(flowVelocity, (char *)"un_projection", 3,params);
 
 
-writeVectorToFile(shearTensor, (char *)"pi_tau_tau", 0,params);
-writeVectorToFile(shearTensor, (char *)"pi_tau_x", 1,params);
-writeVectorToFile(shearTensor, (char *)"pi_tau_y", 2,params);
-writeVectorToFile(shearTensor, (char *)"pi_tau_eta", 3,params);
-writeVectorToFile(shearTensor, (char *)"pi_x_x", 4,params);
-writeVectorToFile(shearTensor, (char *)"pi_x_y", 5,params);
-writeVectorToFile(shearTensor, (char *)"pi_x_eta", 6,params);
-writeVectorToFile(shearTensor, (char *)"pi_y_y", 7,params);
-writeVectorToFile(shearTensor, (char *)"pi_y_eta", 8,params);
-writeVectorToFile(shearTensor, (char *)"pi_eta_eta", 9,params);
+writeVectorToFile(shearTensor, (char *)"pitt", 0,params);
+writeVectorToFile(shearTensor, (char *)"pitx", 1,params);
+writeVectorToFile(shearTensor, (char *)"pity", 2,params);
+writeVectorToFile(shearTensor, (char *)"pitn", 3,params);
+writeVectorToFile(shearTensor, (char *)"pixx", 4,params);
+writeVectorToFile(shearTensor, (char *)"pixy", 5,params);
+writeVectorToFile(shearTensor, (char *)"pixn", 6,params);
+writeVectorToFile(shearTensor, (char *)"piyy", 7,params);
+writeVectorToFile(shearTensor, (char *)"piyn", 8,params);
+writeVectorToFile(shearTensor, (char *)"pinn", 9,params);
 
-writeVectorToFileProjection(shearTensor, (char *)"pi_tau_tau_projection", 0,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_tau_x_projection", 1,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_tau_y_projection", 2,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_tau_eta_projection", 3,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_x_x_projection", 4,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_x_y_projection", 5,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_x_eta_projection", 6,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_y_y_projection", 7,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_y_eta_projection", 8,params);
-writeVectorToFileProjection(shearTensor, (char *)"pi_eta_eta_projection", 9,params);
+writeVectorToFileProjection(shearTensor, (char *)"pitt_projection", 0,params);
+writeVectorToFileProjection(shearTensor, (char *)"pitx_projection", 1,params);
+writeVectorToFileProjection(shearTensor, (char *)"pity_projection", 2,params);
+writeVectorToFileProjection(shearTensor, (char *)"pitn_projection", 3,params);
+writeVectorToFileProjection(shearTensor, (char *)"pixx_projection", 4,params);
+writeVectorToFileProjection(shearTensor, (char *)"pixy_projection", 5,params);
+writeVectorToFileProjection(shearTensor, (char *)"pixn_projection", 6,params);
+writeVectorToFileProjection(shearTensor, (char *)"piyy_projection", 7,params);
+writeVectorToFileProjection(shearTensor, (char *)"piyn_projection", 8,params);
+writeVectorToFileProjection(shearTensor, (char *)"pinn_projection", 9,params);
+
+writeVectorToFileProjection(thermalVelocityVector, (char *)"beta_x_projection", 1, params);
+writeVectorToFile(thermalVelocityVector, (char *)"beta_x", 1, params);
+writeVectorToFileProjection(thermalVelocityVector, (char *)"beta_y_projection", 2, params);
+writeVectorToFile(thermalVelocityVector, (char *)"beta_y", 2, params);
 
 writeVectorToFileProjection(thermalVorticityTensor, (char *)"w_xy_projection", 3, params);
 writeVectorToFile(thermalVorticityTensor, (char *)"w_xy", 3, params);
@@ -713,6 +720,7 @@ if ( (params.OUTPUTFORMAT == 2) || (params.OUTPUTFORMAT == 3) )
 //free the memory
 free2dArrayf(stressTensor, 10);
 free2dArrayf(thermalVorticityTensor, 6);
+free2dArrayf(thermalVelocityVector, 4);
 free(energyDensity);
 free2dArrayf(flowVelocity, 4);
 free(pressure);

@@ -290,8 +290,8 @@ void readEnergyDensityTRENTO3DBlock(float *density, parameters params)
   if (superMCFile.is_open())
   {
     //skip the eight line (l) header
-    std::string line;
-    for (int l = 0; l < 8; l++) getline(superMCFile, line);
+    //std::string line;
+    //for (int l = 0; l < 8; l++) getline(superMCFile, line);
     for (int ix = 0; ix < DIM_X; ix++)
     {
       for (int iy = 0; iy < DIM_Y; iy++)
@@ -301,6 +301,47 @@ void readEnergyDensityTRENTO3DBlock(float *density, parameters params)
           int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
           superMCFile >> temp;
           density[is] = temp + lower_tolerance;
+        }
+      }
+    }
+  }
+
+  else
+  {
+    printf("Could not find initial profile in initial_profiles!");
+  }
+  superMCFile.close();
+}
+
+void readEnergyDensityCPUVH(float *density, parameters params)
+{
+  float lower_tolerance = 1.0e-7;
+  float scale_factor = 1.0;
+
+  int DIM = params.DIM;
+  int DIM_X = params.DIM_X;
+  int DIM_Y = params.DIM_Y;
+  int DIM_ETA = params.DIM_ETA;
+  float ETA_WIDTH = params.ETA_WIDTH;
+  float ETA_FLAT = params.ETA_FLAT;
+  float DETA = params.DETA;
+
+  //first read in the transverse profile from superMC block data format
+  float temp = 0.0;
+  float dummy = 0.0;
+  std::ifstream superMCFile;
+  superMCFile.open("initial_profiles/e.dat");
+  if (superMCFile.is_open())
+  {
+    for (int ieta = 0; ieta < DIM_ETA; ieta++)
+    {
+      for (int iy = 0; iy < DIM_Y; iy++)
+      {
+        for (int ix = 0; ix < DIM_X; ix++)
+        {
+          int is = (DIM_Y * DIM_ETA) * ix + (DIM_ETA) * iy + ieta; //the column packed index spanning x, y, z
+          superMCFile >> dummy >> dummy >> dummy >> temp;
+          density[is] = temp * scale_factor + lower_tolerance;
         }
       }
     }

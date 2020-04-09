@@ -392,7 +392,7 @@ void calculateBaryonDiffusion(float **baryonDiffusion, float **baryonCurrent, fl
 }
 
 
-void calculateThermalVorticityTensor(float *energyDensity, float **flowVelocity, float **thermalVorticityTensor, parameters params)
+void calculateThermalVorticityTensor(float *energyDensity, float **flowVelocity, float **thermalVelocityVector, float **thermalVorticityTensor, parameters params)
 {
 
   // omega_{\mu\nu} = 1/2 ( d_{\nu} \beta{\mu} - d{\mu} \beta_{\nu})
@@ -415,7 +415,7 @@ void calculateThermalVorticityTensor(float *energyDensity, float **flowVelocity,
 
       // omega_{\mu\nu} = 1/2 ( d_{\nu} \beta{\mu} - d{\mu} \beta_{\nu})
       //antisymmetric tensor, calculate 6 components (upper triangular)
-      //calculate the thermal flow vector \beta_{\mu}
+      //calculate the covariant thermal flow vector \beta_{\mu}
 
       float u_t = flowVelocity[0][is];
       float u_t_px = flowVelocity[0][is_px];
@@ -447,30 +447,35 @@ void calculateThermalVorticityTensor(float *energyDensity, float **flowVelocity,
       float T_py = temperatureFromEnergyDensity(energyDensity[is_py]);
       float T_my = temperatureFromEnergyDensity(energyDensity[is_my]);
 
-      float beta_t = T * u_t;
-      float beta_x = T * u_x;
-      float beta_y = T * u_y;
-      float beta_n = T * u_n;
+      float beta_t = u_t / T;
+      float beta_x = u_x / T;
+      float beta_y = u_y / T;
+      float beta_n = u_n / T;
 
-      float beta_t_px = T_px * u_t_px;
-      float beta_x_px = T_px * u_x_px;
-      float beta_y_px = T_px * u_y_px;
-      float beta_n_px = T_px * u_n_px;
+      thermalVelocityVector[0][is] = beta_t;
+      thermalVelocityVector[1][is] = beta_x;
+      thermalVelocityVector[2][is] = beta_y;
+      thermalVelocityVector[3][is] = beta_n; 
 
-      float beta_t_mx = T_mx * u_t_mx;
-      float beta_x_mx = T_mx * u_x_mx;
-      float beta_y_mx = T_mx * u_y_mx;
-      float beta_n_mx = T_mx * u_n_mx;
+      float beta_t_px = u_t_px / T_px ;
+      float beta_x_px = u_x_px / T_px ;
+      float beta_y_px = u_y_px / T_px ;
+      float beta_n_px = u_n_px / T_px ;
 
-      float beta_t_py = T_py * u_t_py;
-      float beta_x_py = T_py * u_x_py;
-      float beta_y_py = T_py * u_y_py;
-      float beta_n_py = T_py * u_n_py;
+      float beta_t_mx = u_t_mx / T_mx;
+      float beta_x_mx = u_x_mx / T_mx;
+      float beta_y_mx = u_y_mx / T_mx;
+      float beta_n_mx = u_n_mx / T_mx;
 
-      float beta_t_my = T_my * u_t_my;
-      float beta_x_my = T_my * u_x_my;
-      float beta_y_my = T_my * u_y_my;
-      float beta_n_my = T_my * u_n_my;
+      float beta_t_py = u_t_py / T_py;
+      float beta_x_py = u_x_py / T_py;
+      float beta_y_py = u_y_py / T_py;
+      float beta_n_py = u_n_py / T_py;
+
+      float beta_t_my = u_t_my / T_my;
+      float beta_x_my = u_x_my / T_my;
+      float beta_y_my = u_y_my / T_my;
+      float beta_n_my = u_n_my / T_my;
 
       //NOTE NEED TO FIX THESE, for the temporal derivatives we need to evolve for another time step
       thermalVorticityTensor[0][is] = 0.0; // w_tx
