@@ -221,6 +221,8 @@ void readInParameters(struct parameters &params)
     fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
     params.TAU0 = dummyFloat;
     fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
+    params.NT = dummyInt;
+    fscanf(fileIn, "%s\t%d\n", dummyChar, &dummyInt);
     params.EOS_TYPE = dummyInt;
     fscanf(fileIn, "%s\t%f\n", dummyChar, &dummyFloat);
     params.E_FREEZE = dummyFloat;

@@ -11,14 +11,14 @@
 #include "Parameter.h"
 #include "EquationOfState.cpp"
 
-void calculateHypertrigTable(float ****hypertrigTable, parameters params)
+void calculateHypertrigTable(float ****hypertrigTable, parameters params, float tau)
 {
   int DIM_RAP = params.DIM_RAP;
   int DIM_PHIP = params.DIM_PHIP;
   int DIM_ETA = params.DIM_ETA;
   float DRAP = params.DRAP;
   float DETA = params.DETA;
-  float TAU = params.TAU;
+  //float TAU = params.TAU;
 
   float rapmin = (-1.0) * ((float)(DIM_RAP-1) / 2.0) * DRAP;
   float etamin = (-1.0) * ((float)(DIM_ETA-1) / 2.0) * DETA;
@@ -46,19 +46,19 @@ void calculateHypertrigTable(float ****hypertrigTable, parameters params)
         hypertrigTable[0][irap][iphip][ieta] = 1.0; //p^tau, p^tau component
         hypertrigTable[1][irap][iphip][ieta] = cos(phip) / cosh(rap - eta); //p^tau, p^x
         hypertrigTable[2][irap][iphip][ieta] = sin(phip) / cosh(rap - eta); //p^tau, p^y
-        hypertrigTable[3][irap][iphip][ieta] = (1.0 / TAU) * tanh(rap - eta); //p^tau, p^eta
+        hypertrigTable[3][irap][iphip][ieta] = (1.0 / tau) * tanh(rap - eta); //p^tau, p^eta
         hypertrigTable[4][irap][iphip][ieta] = (cos(phip) * cos(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^x
         hypertrigTable[5][irap][iphip][ieta] = (cos(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^x, p^y
-        hypertrigTable[6][irap][iphip][ieta] = (1.0 / TAU) * (cos(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^x, p^eta
+        hypertrigTable[6][irap][iphip][ieta] = (1.0 / tau) * (cos(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^x, p^eta
         hypertrigTable[7][irap][iphip][ieta] = (sin(phip) * sin(phip)) / (cosh(rap - eta) * cosh(rap - eta)); //p^y, p^y
-        hypertrigTable[8][irap][iphip][ieta] = (1.0 / TAU) * (sin(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^y, p^eta
-        hypertrigTable[9][irap][iphip][ieta] = (1.0 / (TAU * TAU)) * tanh(rap - eta) * tanh(rap - eta); //p^eta, p^eta
+        hypertrigTable[8][irap][iphip][ieta] = (1.0 / tau) * (sin(phip) * tanh(rap - eta)) / cosh(rap - eta); //p^y, p^eta
+        hypertrigTable[9][irap][iphip][ieta] = (1.0 / (tau * tau)) * tanh(rap - eta) * tanh(rap - eta); //p^eta, p^eta
       }
     }
   }
 }
 
-void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable, parameters params)
+void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float ****hypertrigTable, parameters params, float tau)
 {
   //int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
@@ -67,7 +67,6 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
   int DIM_PHIP = params.DIM_PHIP;
   int DIM = params.DIM;
   //float DRAP = params.DRAP;
-  float TAU = params.TAU;
   //float TAU = params.TAU;
   float weight_rap;
 
@@ -101,7 +100,7 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
           else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
         }
       }
-      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / TAU; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
+      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / tau; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
       else stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //multiply by common differential factor once
     }
   }
@@ -142,7 +141,7 @@ void calculateBaryonCurrent(float **baryonCurrent, float ***shiftedChargeDensity
   }
 }
 
-void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity, parameters params)
+void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVelocity, parameters params, float tau)
 {
   int DIM = params.DIM;
   int DIM_X = params.DIM_X;
@@ -151,7 +150,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   float DX = params.DX;
   float DY = params.DY;
   float DETA = params.DETA;
-  float TAU = params.TAU;
+  //float TAU = params.TAU;
 
   float tolerance = 1.0e-7;
 
@@ -197,19 +196,19 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     gsl_matrix_set(gmunu, 0, 0, 1.0); //tau,tau
     gsl_matrix_set(gmunu, 0, 1, -1.0); //tau,x
     gsl_matrix_set(gmunu, 0, 2, -1.0); //tau,y
-    gsl_matrix_set(gmunu, 0, 3, -1.0*TAU*TAU); //tau,eta
+    gsl_matrix_set(gmunu, 0, 3, -1.0*tau*tau); //tau,eta
     gsl_matrix_set(gmunu, 1, 0, 1.0); //x,tau
     gsl_matrix_set(gmunu, 1, 1, -1.0); //x,x
     gsl_matrix_set(gmunu, 1, 2, -1.0); //x,y
-    gsl_matrix_set(gmunu, 1, 3, -1.0*TAU*TAU); //x,eta
+    gsl_matrix_set(gmunu, 1, 3, -1.0*tau*tau); //x,eta
     gsl_matrix_set(gmunu, 2, 0, 1.0); //y,tau
     gsl_matrix_set(gmunu, 2, 1, -1.0); //y,x
     gsl_matrix_set(gmunu, 2, 2, -1.0); //y,y
-    gsl_matrix_set(gmunu, 2, 3, -1.0*TAU*TAU); //y,eta
+    gsl_matrix_set(gmunu, 2, 3, -1.0*tau*tau); //y,eta
     gsl_matrix_set(gmunu, 3, 0, 1.0); //eta,tau
     gsl_matrix_set(gmunu, 3, 1, -1.0); //eta,x
     gsl_matrix_set(gmunu, 3, 2, -1.0); //eta,y
-    gsl_matrix_set(gmunu, 3, 3, -1.0*TAU*TAU); //eta,eta
+    gsl_matrix_set(gmunu, 3, 3, -1.0*tau*tau); //eta,eta
     //lower one index of the stress tensor; save it to the same matrix to save memory
     gsl_matrix_mul_elements(Tmunu, gmunu); //result stored in Tmunu !this multiplies element-wise, not ordinary matrix multiplication!
     gsl_eigen_nonsymmv_workspace *eigen_workspace;
@@ -232,9 +231,9 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
         gsl_complex v2 = gsl_matrix_complex_get(eigen_vectors, 2 , i);
         gsl_complex v3 = gsl_matrix_complex_get(eigen_vectors, 3 , i);
 
-        if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (TAU * TAU - 1.0) )) > 0) //choose timelike eigenvector
+        if (GSL_IMAG(v0) == 0 && (2.0 * GSL_REAL(v0) * GSL_REAL(v0) - 1.0 - (GSL_REAL(v3) * GSL_REAL(v3) * (tau * tau - 1.0) )) > 0) //choose timelike eigenvector
         {
-          double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + TAU*TAU*GSL_REAL(v3)*GSL_REAL(v3));
+          double minkowskiLength = GSL_REAL(v0)*GSL_REAL(v0) - (GSL_REAL(v1)*GSL_REAL(v1) + GSL_REAL(v2)*GSL_REAL(v2) + tau*tau*GSL_REAL(v3)*GSL_REAL(v3));
           double factor = 1.0 / sqrt(minkowskiLength);
 
           if (GSL_REAL(v0) < 0) factor=-factor;

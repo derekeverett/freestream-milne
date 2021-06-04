@@ -94,7 +94,7 @@ float linearInterp2D(float x0, float x1,
 }
 
 //#pragma acc routine //build a copy of function to run on device
-void freeStream(float **density, float ***shiftedDensity, parameters params)
+void freeStream(float **density, float ***shiftedDensity, parameters params, float tau)
 {
   int DIM_X = params.DIM_X;
   int DIM_Y = params.DIM_Y;
@@ -107,7 +107,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
   float DETA = params.DETA;
   //float DRAP = params.DRAP;
   float TAU0 = params.TAU0;
-  float TAU = params.TAU;
+  //float TAU = params.TAU;
   float DTAU = params.DTAU;
 
   float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
@@ -184,14 +184,14 @@ void freeStream(float **density, float ***shiftedDensity, parameters params)
         if (DIM_ETA == 1)
         {
           eta_new = 0.0;
-          x_new   = x - cos(phip) * DTAU;
-          y_new   = y - sin(phip) * DTAU;
+          x_new   = x - cos(phip) * tau;
+          y_new   = y - sin(phip) * tau;
         }
         else if (DIM_ETA > 1)
         {
-          eta_new = asinh( (TAU / TAU0) * sinh(eta - rap) ) + rap; //old formula works
-          x_new   = x - cos(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
-          y_new   = y - sin(phip) * (TAU * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
+          eta_new = asinh( (tau / TAU0) * sinh(eta - rap) ) + rap; //old formula works
+          x_new   = x - cos(phip) * (tau * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
+          y_new   = y - sin(phip) * (tau * cosh(rap - eta_new) - TAU0 * cosh(rap - eta));
         }
 
         //get fractions for linear interpolation routine

@@ -164,7 +164,8 @@ params.DY = 0.1;
 params.DETA = 0.1;
 params.DRAP = 0.2;
 params.DTAU = 0.5;
-params.TAU0 = 0.1;
+params.TAU0 = 0.0;
+params.NT = 1;
 params.EOS_TYPE = 1;
 params.E_FREEZE = 1.7;
 params.VISCOUS_MATCHING = 1;
@@ -181,12 +182,16 @@ int DIM_X = params.DIM_X;
 int DIM_Y = params.DIM_Y;
 int DIM_ETA = params.DIM_ETA;
 
+int n_t = params.NT;
+float tau_step = params.TAU / n_t; 
+
 if(PRINT_SCREEN)
   {
     printf("Parameters are ...\n");
     printf("(DIM_X, DIM_Y, DIM_ETA, DIM_PHIP, DIM_RAP) = (%d, %d, %d, %d, %d)\n", params.DIM_X, params.DIM_Y, params.DIM_ETA, params.DIM_PHIP, params.DIM_RAP);
     printf("(DX, DY, DETA, DTAU) = (%.2f fm, %.2f fm, %.2f, %.2f fm/c)\n", params.DX, params.DY, params.DETA, params.DTAU);
     printf("TAU0 = %.2f fm/c\n", params.TAU0);
+    printf("Time stepping with proper time step size tau_step = %.2f fm/c\n", tau_step);
     printf("SIGMA = %.2f \n", params.SIGMA);
     printf("E_FREEZE = %.3f GeV / fm^3 \n", params.E_FREEZE);
     if (params.VISCOUS_MATCHING) printf("Will match to hydro including viscous part of Tmunu \n");
@@ -372,29 +377,6 @@ if(params.BARYON) shiftedChargeDensity = calloc3dArrayf(shiftedChargeDensity, pa
 //pretabulate trig and hypertrig functions before this step to save time?
 if (PRINT_SCREEN) printf("performing the free streaming\n");
 
-double sec = 0.0;
-#ifdef _OPENMP
-sec = omp_get_wtime();
-#endif
-
-///////////  BEGIN LOOP OVER TIME STEPS HERE ////////////////////////
-////////// MOVE DECLARATIONS AND ALLOCATION OUTSIDE LOOP? //////////
-freeStream(density, shiftedDensity, params);
-
-//#pragma acc update host(shiftedDensity)
-free2dArrayf(density, params.DIM);
-if (params.BARYON) freeStream(chargeDensity, shiftedChargeDensity, params);
-//#if(params.BARYON) pragma acc update host(shiftedChargeDensity)
-if (params.BARYON) free2dArrayf(chargeDensity, params.DIM);
-
-#ifdef _OPENMP
-sec = omp_get_wtime() - sec;
-#endif
-if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
-
-//Landau matching to find the components of energy-momentum tensor
-if (PRINT_SCREEN) printf("Landau matching to find hydrodynamic variables\n");
-
 //the ten independent components of the stress tensor
 float **stressTensor = NULL;
 stressTensor = calloc2dArrayf(stressTensor, 10, params.DIM);
@@ -408,38 +390,6 @@ if(params.BARYON) baryonCurrent = calloc2dArrayf(baryonCurrent, 4, params.DIM);
 float ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
-if (PRINT_SCREEN) printf("calculating hypertrig table\n");
-calculateHypertrigTable(hypertrigTable, params);
-
-//calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
-if (PRINT_SCREEN) printf("calculating independent components of stress tensor\n");
-#ifdef _OPENMP
-sec = omp_get_wtime();
-#endif
-calculateStressTensor(stressTensor, shiftedDensity, hypertrigTable, params);
-free3dArrayf(shiftedDensity, params.DIM, params.DIM_RAP);
-#ifdef _OPENMP
-sec = omp_get_wtime() - sec;
-#endif
-if (PRINT_SCREEN) printf("calculating stress tensor took %f seconds\n", sec);
-
-if (params.BARYON)
-{
-  //calculate the four independent components of the baryon current by integrating over rapidity and phi_p
-  if (PRINT_SCREEN) printf("calculating independent components of baryon current\n");
-  #ifdef _OPENMP
-  sec = omp_get_wtime();
-  #endif
-  calculateBaryonCurrent(baryonCurrent, shiftedChargeDensity, hypertrigTable, params);
-  free3dArrayf(shiftedChargeDensity, params.DIM, params.DIM_RAP);
-  #ifdef _OPENMP
-  sec = omp_get_wtime() - sec;
-  #endif
-  if (PRINT_SCREEN) printf("calculating baryon current took %f seconds\n", sec);
-}
-
-//done with hypertrig table as well
-free4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
 
 //variables to store the hydrodynamic variables after the Landau matching is performed
 //the energy density
@@ -470,30 +420,62 @@ shearTensor = calloc2dArrayf(shearTensor, 10, params.DIM); //calculate 10 compon
 float **baryonDiffusion = NULL;
 if(params.BARYON) baryonDiffusion = calloc2dArrayf(baryonDiffusion, 4, params.DIM);
 
-//solve the eigenvalue problem for the energy density and flow velocity
-if (PRINT_SCREEN) printf("solving eigenvalue problem for energy density and flow velocity\n");
+
+///////////  BEGIN LOOP OVER TIME STEPS HERE ////////////////////////
+double sec = 0.0;
 #ifdef _OPENMP
 sec = omp_get_wtime();
 #endif
-solveEigenSystem(stressTensor, energyDensity, flowVelocity, params);
+
+float tau0 = params.TAU0;
+float tau = tau0;
+for (int it = 0; it < n_t; it++)
+{
+    tau = tau0 + (it+1)*tau_step;
+    if (PRINT_SCREEN) printf("Time step %d \n", it);
+    if (PRINT_SCREEN) printf("tau = %f \n", tau);
+    calculateHypertrigTable(hypertrigTable, params, tau);
+    freeStream(density, shiftedDensity, params, tau);
+    //Landau matching to find the components of energy-momentum tensor
+    //calculate the ten independent components of the stress tensor by integrating over rapidity and phi_p
+    calculateStressTensor(stressTensor, shiftedDensity, hypertrigTable, params, tau);
+    //solve the eigenvalue problem for the energy density and flow velocity
+    solveEigenSystem(stressTensor, energyDensity, flowVelocity, params, tau);
+    
+    //write energy density to fs history file here...
+    
+}
+
+
+//#pragma acc update host(shiftedDensity)
+free2dArrayf(density, params.DIM);
+if (params.BARYON) freeStream(chargeDensity, shiftedChargeDensity, params, params.TAU);
+//#if(params.BARYON) pragma acc update host(shiftedChargeDensity)
+if (params.BARYON) free2dArrayf(chargeDensity, params.DIM);
+
 #ifdef _OPENMP
 sec = omp_get_wtime() - sec;
 #endif
-if (PRINT_SCREEN) printf("solving eigenvalue problem took %f seconds\n", sec);
+if (PRINT_SCREEN) printf("Free streaming took %f seconds\n", sec);
+
+
+free3dArrayf(shiftedDensity, params.DIM, params.DIM_RAP);
+if (params.BARYON)
+{
+  //calculate the four independent components of the baryon current by integrating over rapidity and phi_p
+  calculateBaryonCurrent(baryonCurrent, shiftedChargeDensity, hypertrigTable, params);
+  free3dArrayf(shiftedChargeDensity, params.DIM, params.DIM_RAP);
+}
+
+//done with hypertrig table as well
+free4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP);
 
 if (params.BARYON)
 {
   //calculate baryon density and diffusion current
   if (PRINT_SCREEN) printf("calculating baryon density and diffusion current \n");
-  #ifdef _OPENMP
-  sec = omp_get_wtime();
-  #endif
   calculateBaryonDensity(baryonDensity, baryonCurrent, flowVelocity, params);
   calculateBaryonDiffusion(baryonDiffusion, baryonCurrent, baryonDensity, flowVelocity, params);
-  #ifdef _OPENMP
-  sec = omp_get_wtime() - sec;
-  #endif
-  if (PRINT_SCREEN) printf("calculating baryon density and diffusion current took %f seconds\n", sec);
 }
 
 calculatePressure(energyDensity, baryonDensity, pressure, params);
@@ -523,10 +505,6 @@ if (TEST_INTERPOL)
 }
 /////////////////////////////END TESTING FOR JETSCAPE//////////////////////////////
 
-//write the next entry in hdf5 spacetime evolution file
-//WriteHistoryJETSCAPE();
-
-///////////  END LOOP OVER TIME STEPS HERE ////////////////////////
 
 float totalEnergyAfter = 0.0;
 for (int is = 0; is < params.DIM; is++) totalEnergyAfter += stressTensor[0][is];

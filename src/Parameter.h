@@ -20,6 +20,7 @@ struct parameters
   float DRAP;
   float DTAU;
   float TAU0;
+  int NT;
   int EOS_TYPE;
   float E_FREEZE;
   int VISCOUS_MATCHING;
