@@ -390,7 +390,6 @@ if(params.BARYON) baryonCurrent = calloc2dArrayf(baryonCurrent, 4, params.DIM);
 float ****hypertrigTable = NULL;
 hypertrigTable = calloc4dArrayf(hypertrigTable, 10, params.DIM_RAP, params.DIM_PHIP, params.DIM_ETA); //depends on eta because we have function of eta - y
 
-
 //variables to store the hydrodynamic variables after the Landau matching is performed
 //the energy density
 float *energyDensity = NULL;
@@ -429,9 +428,9 @@ sec = omp_get_wtime();
 
 float tau0 = params.TAU0;
 float tau = tau0;
-for (int it = 0; it < n_t; it++)
+for (int it = 1; it <= n_t; it++)
 {
-    tau = tau0 + (it+1)*tau_step;
+    tau = tau0 + (it)*tau_step;
     if (PRINT_SCREEN) printf("Time step %d \n", it);
     if (PRINT_SCREEN) printf("tau = %f \n", tau);
     calculateHypertrigTable(hypertrigTable, params, tau);
@@ -443,6 +442,7 @@ for (int it = 0; it < n_t; it++)
     solveEigenSystem(stressTensor, energyDensity, flowVelocity, params, tau);
     
     //write energy density to fs history file here...
+    outputEvolutionDataXYEta_chun(energyDensity, flowVelocity, it, tau, tau_step, params);
     
 }
 

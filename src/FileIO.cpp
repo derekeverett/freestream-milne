@@ -7,6 +7,7 @@
 #include "Parameter.h"
 #include "FSConfig.h"
 #include <math.h>
+#include "EquationOfState.cpp"
 
 void writeScalarToFile(float *var, char name[255], parameters params)
 {
@@ -245,9 +246,82 @@ void readInParameters(struct parameters &params)
   }
 
 }
-/*
-void readEoSTable()
-{
 
+
+// This function outputs freestreaming evolution file in binary format
+void outputEvolutionDataXYEta_chun(float *energyDensity, float **flowVelocity, int itau, float tau, float tau_step, parameters params) 
+{
+    const float hbarc = 0.197326938;
+    const float eC = params.E_FREEZE;
+    const float tau0 = params.TAU0;
+    
+    const std::string out_name_xyeta = "evolution_all_xyeta_fs.dat";
+    std::string out_open_mode;
+    FILE *out_file_xyeta;
+    // If it's the first timestep, overwrite the previous file
+    if (tau == tau0) out_open_mode = "wb";
+    else out_open_mode = "ab";
+    out_file_xyeta = fopen(out_name_xyeta.c_str(), out_open_mode.c_str());
+    // write out header
+    const int nx        = params.DIM_X;
+    const int ny        = params.DIM_Y;
+    const int neta      = params.DIM_ETA;
+    const float dx     = params.DX;
+    const float dy     = params.DY;
+    const float deta   = params.DETA;
+    float xmin = (-1.0) * ((float)(nx-1) / 2.0) * dx;
+    float ymin = (-1.0) * ((float)(ny-1) / 2.0) * dy;
+    float etamin = (-1.0) * ((float)(neta-1) / 2.0) * deta;
+    if (tau == tau0) 
+    {
+        const int nVar_per_cell = 10;
+        float header[] = {
+            static_cast<float>(tau0), 
+            static_cast<float>(tau_step),
+            static_cast<float>(nx), 
+            static_cast<float>(dx),
+            static_cast<float>(xmin),
+            static_cast<float>(ny), 
+            static_cast<float>(dy),
+            static_cast<float>(ymin),
+            static_cast<float>(neta), 
+            static_cast<float>(deta),
+            static_cast<float>(etamin),
+            static_cast<float>(nVar_per_cell)
+        };
+        fwrite(header, sizeof(float), 16, out_file_xyeta);
+    }
+    for (int ieta = 0; ieta < neta; ieta += 1) 
+    {
+        for (int iy = 0; iy < ny; iy += 1) 
+        {
+            for (int ix = 0; ix < nx; ix += 1) 
+            {
+                int is = (ny * neta) * ix + (neta) * iy + ieta; //the column packed index spanning x, y, z
+                float e_local    = energyDensity[is];  // 1/fm^4
+                float p_local    = e_local / 3.; // (conformal EoS)
+                float ux   = flowVelocity[1][is];
+                float uy   = flowVelocity[2][is];
+                float ueta = flowVelocity[3][is];
+                // T_local is in 1/fm
+                float T_local = temperatureFromEnergyDensity(e_local); // (conformal EoS)
+                if (e_local*hbarc < params.E_FREEZE) continue;
+                // only ouput fluid cells that are above cut-off energy density
+                float ideal[] = {static_cast<float>(itau),
+                                 static_cast<float>(ix),
+                                 static_cast<float>(iy),
+                                 static_cast<float>(ieta),
+                                 static_cast<float>(e_local*hbarc),
+                                 static_cast<float>(p_local*hbarc),
+                                 static_cast<float>(T_local*hbarc),
+                                 static_cast<float>(ux),
+                                 static_cast<float>(uy),
+                                 static_cast<float>(ueta)};
+                fwrite(ideal, sizeof(float), 10, out_file_xyeta);
+            }
+        }
+    }
+    fclose(out_file_xyeta);
 }
-*/
+
+

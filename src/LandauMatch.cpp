@@ -80,6 +80,8 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
       int ix = is / (DIM_Y * DIM_ETA);
       int iy = (is - (DIM_Y * DIM_ETA * ix))/ DIM_ETA;
       int ieta = is - (DIM_Y * DIM_ETA * ix) - (DIM_ETA * iy);
+      
+      float integ_temp = 0.;
 
       for (int irap = 0; irap < DIM_RAP; irap++)
       {
@@ -90,18 +92,21 @@ void calculateStressTensor(float **stressTensor, float ***shiftedDensity, float 
         //w is an integration variable on the domain (-1,1) - careful not to include endpoints (nans)
         float w =  -.9975 + (float)irap * (1.995 / (float)(DIM_RAP - 1));
         float jacobian = (M_PI/2.0) / cos( (M_PI/2.0)*w ) / cos( (M_PI/2.0)*w ) * (1.995 / float(DIM_RAP - 1));
+        
 
         for (int iphip = 0; iphip < DIM_PHIP; iphip++)
         {
           //check convergence!
           // T^(mu,nu) = int deta int dphip G^(mu,nu)
           //#pragma omp simd (+:stressTensor_tmp)
-          if (DIM_ETA == 1) stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
-          else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
+          //if (DIM_ETA == 1) stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          if (DIM_ETA == 1) integ_temp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta];
+          //else stressTensor[ivar][is] += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
+          else integ_temp += shiftedDensity[is][irap][iphip] * hypertrigTable[ivar][irap][iphip][ieta] * jacobian;
         }
       }
-      if (DIM_ETA == 1) stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip / tau; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
-      else stressTensor[ivar][is] = stressTensor[ivar][is] * d_phip; //multiply by common differential factor once
+      if (DIM_ETA == 1) stressTensor[ivar][is] = integ_temp * d_phip / tau; //catch the special case of 2+1D FS (solution in PRC 91, 064906)
+      else stressTensor[ivar][is] = integ_temp * d_phip; //multiply by common differential factor once
     }
   }
 }
@@ -152,7 +157,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
   float DETA = params.DETA;
   //float TAU = params.TAU;
 
-  float tolerance = 1.0e-7;
+  float tolerance = 1.0e-10;
 
   float gamma_max = 100.0; // the maximum allowed flow boost factor when searching for eigenvectors
 
@@ -282,7 +287,7 @@ void solveEigenSystem(float **stressTensor, float *energyDensity, float **flowVe
     if (eigenvalue_exists == 0)
     {
       //in dilute regions where we can't find a timelike eigenvector, set e = 0, u^t = 1, u^x=u^y=u^n=0
-      energyDensity[is] = 1.0e-3;
+      energyDensity[is] = 1.0e-5;
       flowVelocity[0][is] = 1.0;
       flowVelocity[1][is] = 0.0;
       flowVelocity[2][is] = 0.0;

@@ -108,7 +108,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params, flo
   //float DRAP = params.DRAP;
   float TAU0 = params.TAU0;
   //float TAU = params.TAU;
-  float DTAU = params.DTAU;
+  //float DTAU = params.DTAU;
 
   float xmin = (-1.0) * ((float)(DIM_X-1) / 2.0) * DX;
   float ymin = (-1.0) * ((float)(DIM_Y-1) / 2.0) * DY;
@@ -119,7 +119,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params, flo
   //gsl_error_handler_t * gsl_set_error_handler_off();
 
   //for case of 2+1D, set up the bicubic interpolating function of initial density
-  std::cout << "Setting up bicubic splines ..."<< "\n";
+  //std::cout << "Setting up bicubic splines ..."<< "\n";
   const gsl_interp2d_type *T = gsl_interp2d_bicubic;
   double x_vals[DIM_X];
   double y_vals[DIM_Y];
@@ -151,7 +151,7 @@ void freeStream(float **density, float ***shiftedDensity, parameters params, flo
   gsl_interp_accel *xacc = gsl_interp_accel_alloc();
   gsl_interp_accel *yacc = gsl_interp_accel_alloc();
   gsl_spline2d_init(spline, x_vals, y_vals, density_vals, nx, ny);
-  std::cout << "Bicubic splines initialized..."<< "\n";
+  //std::cout << "Bicubic splines initialized..."<< "\n";
 
   #pragma omp parallel for
   for (int is = 0; is < DIM; is++)
